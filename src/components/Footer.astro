@@ -1,0 +1,59 @@
+---
+// Footer.astro — site footer with stats + attribution
+interface Props {
+  filmCount:   number;
+  cinemaCount: number;
+  sessionCount: number;
+}
+const { filmCount, cinemaCount, sessionCount } = Astro.props;
+---
+<footer role="contentinfo">
+  <div class="footer-bg" aria-hidden="true"></div>
+  <div class="footer-grid" aria-hidden="true"></div>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-headline">
+        <p class="footer-eyebrow" aria-hidden="true">Cinema en català</p>
+        <div class="footer-title" aria-hidden="true">EL CINEMA<br>EN <em>CATALÀ</em></div>
+      </div>
+      <div class="footer-stats" role="region" aria-label="Estadístiques de la cartellera">
+        <div class="footer-stat">
+          <span class="footer-stat-num">{filmCount}</span>
+          <span class="footer-stat-label">Pel·lícules</span>
+        </div>
+        <div class="footer-stat">
+          <span class="footer-stat-num">{cinemaCount}</span>
+          <span class="footer-stat-label">Cinemes</span>
+        </div>
+        <div class="footer-stat">
+          <span class="footer-stat-num">{sessionCount}</span>
+          <span class="footer-stat-label">Sessions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <a class="footer-logo" href="/" aria-label="FILMCAT - Tornar a l'inici">
+        <svg viewBox="0 0 100 88" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="flg1" x1="0" y1="88" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#922B21"/>
+              <stop offset="100%" stop-color="#E74C3C"/>
+            </linearGradient>
+            <linearGradient id="flg2" x1="50" y1="0" x2="0" y2="88" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#C0392B" stop-opacity=".85"/>
+              <stop offset="100%" stop-color="#7B241C"/>
+            </linearGradient>
+          </defs>
+          <polygon points="50,0 100,88 0,88" fill="url(#flg1)"/>
+          <polygon points="50,0 50,60 0,88" fill="url(#flg2)"/>
+        </svg>
+        <span class="footer-logo-text">FILMCAT</span>
+      </a>
+      <div class="footer-note">
+        Dades: <a href="https://www.gencat.cat/llengua/cinema/" target="_blank" rel="noopener noreferrer">Portal Cinema en Català — Generalitat de Catalunya</a><br>
+        Actualitzat cada dijous · Llicència de dades obertes
+      </div>
+    </div>
+  </div>
+</footer>

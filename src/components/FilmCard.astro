@@ -1,0 +1,100 @@
+---
+// FilmCard.astro — static film card with data-film + data-version for client islands
+// NOTE: Astro templates auto-escape {expr} — no need to call sanitize() on text content.
+// sanitize() is only needed before set:html directives (not used here).
+import type { Film } from '../lib/types';
+import { TMDB_IMG } from '../lib/tmdb';
+
+interface Props {
+  film: Film;
+}
+const { film } = Astro.props;
+
+const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
+const isUpcoming   = film.sessions.length === 0;
+
+// Poster URL (server-side resolved)
+const posterSrc = film.posterPath ? `${TMDB_IMG}${film.posterPath}` : null;
+
+// Abbreviation for placeholder
+const abbr = film.title
+  .split(' ')
+  .filter(w => w.length > 2)
+  .map(w => w[0])
+  .join('')
+  .toUpperCase()
+  .slice(0, 3);
+
+const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const genreFirst = film.genre ? film.genre.split(' · ')[0] : '';
+
+// Validate colors — only hex values allowed
+const colorRe = /^#[0-9a-fA-F]{3,6}$/;
+const c1 = colorRe.test(film.color1) ? film.color1 : '#111';
+const c2 = colorRe.test(film.color2) ? film.color2 : '#222';
+
+// Serialize film data for modal (client-side island reads this)
+const filmJson = JSON.stringify({
+  id:           film.id,
+  title:        film.title,
+  titleOriginal: film.titleOriginal,
+  director:     film.director,
+  synopsis:     film.synopsis,
+  version:      film.version,
+  year:         film.year,
+  genre:        film.genre,
+  duration:     film.duration,
+  posterPath:   film.posterPath,
+  backdropPath: film.backdropPath,
+  _tmdbId:      film._tmdbId ?? null,
+  _trailerKey:  film._trailerKey ?? null,
+  sessions:     film.sessions,
+});
+---
+<article
+  class="card"
+  role="listitem"
+  tabindex="0"
+  data-version={film.version}
+  data-film={filmJson}
+  aria-label={`${film.title} (${film.year}), versió ${film.version}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
+>
+  <div class="card-img-wrap">
+    {posterSrc ? (
+      <img
+        src={posterSrc}
+        alt={`Pòster oficial de ${film.title}`}
+        loading="lazy"
+        decoding="async"
+        width="215"
+        height="322"
+      />
+    ) : (
+      <div
+        class="poster-placeholder"
+        style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 100 88" width="38" style="opacity:.25">
+          <polygon points="50,0 100,88 0,88" fill="white"/>
+        </svg>
+        <div class="abbr">{abbr}</div>
+        <div class="pp-title">{film.title}</div>
+      </div>
+    )}
+    <div class="card-overlay" aria-hidden="true">
+      <div class="card-overlay-title">{film.title}</div>
+      <div class="card-overlay-sessions">
+        {!isUpcoming ? `${sessionCount} sessions avui` : 'Pròximament'}
+      </div>
+    </div>
+  </div>
+
+  <div class="card-info">
+    <div class="card-title">{film.title}</div>
+    <div class="card-meta">
+      <span class={`badge${isVO ? ' vo' : ''}`}>{film.version}</span>
+      <span>{genreFirst}</span>
+    </div>
+  </div>
+</article>

@@ -1,17 +1,139 @@
 ---
+// index.astro — SSR entry point: fetch all data server-side, render HTML
+import Base      from '../layouts/Base.astro';
+import Header    from '../components/Header.astro';
+import Hero      from '../components/Hero.astro';
+import FilmCard  from '../components/FilmCard.astro';
+import CinemaCard from '../components/CinemaCard.astro';
+import Footer    from '../components/Footer.astro';
 
+import { fetchFilms, fetchCinemas }  from '../lib/filmcat';
+import { fetchTMDBPoster }           from '../lib/tmdb';
+
+// ── Fetch all data in parallel ──
+const [{ films, comingSoon }, cinemas] = await Promise.all([
+  fetchFilms(),
+  fetchCinemas(),
+]);
+
+// ── TMDB posters (server-side, API key stays private) ──
+await Promise.allSettled(
+  [...films, ...comingSoon].map(async film => {
+    const result = await fetchTMDBPoster(film.searchTitle, film.year);
+    if (result) {
+      film.posterPath   = result.posterPath;
+      film.backdropPath = result.backdropPath;
+      film._tmdbId      = result.tmdbId;
+    }
+  })
+);
+
+// ── Count films per cinema ──
+const cinemaFilmCount: Record<string, number> = {};
+for (const film of films) {
+  for (const session of film.sessions) {
+    cinemaFilmCount[session.cinema] = (cinemaFilmCount[session.cinema] ?? 0) + 1;
+  }
+}
+for (const cinema of cinemas) {
+  cinema.films = cinemaFilmCount[cinema.name] ?? 0;
+}
+
+// ── Stats ──
+const sessionCount = films.reduce((a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0), 0);
+
+// ── Cache header: 7 days, revalidate in background ──
+Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base
+  title="FILMCAT — Cinema en Català"
+  description="Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes actualitzats cada dijous."
+>
+  <Header />
+
+  <Hero
+    filmCount={films.length}
+    cinemaCount={cinemas.length}
+    sessionCount={sessionCount}
+  />
+
+  <main id="main-content">
+
+    <!-- ── CARTELLERA ── -->
+    <section aria-labelledby="cartellera-h" id="avui" style="padding-top: 32px">
+
+      <!-- Filter bar (buttons activate client-side JS in Phase 2) -->
+      <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per versió">
+        <button class="filter-btn active" data-filter="all"  aria-pressed="true">Totes</button>
+        <button class="filter-btn"        data-filter="VD"   aria-pressed="false">Doblada (VD)</button>
+        <button class="filter-btn"        data-filter="VO"   aria-pressed="false">Versió Original</button>
+        <button class="filter-btn"        data-filter="VOSC" aria-pressed="false">Sub. Català</button>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title" id="cartellera-h" style="scroll-margin-top: 80px">En Cartellera</h2>
+      </div>
+
+      <div class="carousel-wrap">
+        <div class="carousel" id="mainCarousel" role="list" aria-label="Pel·lícules en cartellera">
+          {films.map(film => <FilmCard film={film} />)}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PRÒXIMES ESTRENES ── -->
+    {comingSoon.length > 0 && (
+      <section aria-labelledby="upcoming-h" style="margin-top: clamp(3rem, 8vw, 5rem)">
+        <div class="section-header">
+          <h2 class="section-title" id="upcoming-h">Pròximes Estrenes</h2>
+        </div>
+        <div class="carousel-wrap">
+          <div class="carousel" id="upcomingCarousel" role="list" aria-label="Pròximes estrenes en català">
+            {comingSoon.map(film => <FilmCard film={film} />)}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- ── CINEMES ── -->
+    <section aria-labelledby="cinemes-h" id="cinemes" style="margin-top: clamp(3rem, 8vw, 5rem)">
+      <div class="section-header">
+        <h2 class="section-title" id="cinemes-h">Cinemes</h2>
+      </div>
+      <div class="cinema-list" id="cinemaList" role="list">
+        {cinemas.map(cinema => <CinemaCard cinema={cinema} />)}
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── MODAL shell (Phase 2 adds JS to populate it) ── -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal" tabindex="-1">
+      <button class="close-btn" id="modalCloseBtn" aria-label="Tancar">✕</button>
+      <div class="modal-hero" aria-hidden="true">
+        <img class="modal-bg" id="modalBgImg" src="" alt="" role="presentation">
+        <div class="modal-hero-content">
+          <div class="modal-poster"><img id="modalPosterImg" src="" alt=""></div>
+          <div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-tags" id="modalTags"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p class="modal-synopsis" id="modalSynopsis"></p>
+        <div id="modalTrailer"></div>
+        <h3 class="modal-section-title">Sessions disponibles</h3>
+        <div class="sessions-grid" id="modalSessions" role="list" aria-label="Sessions disponibles"></div>
+      </div>
+    </div>
+  </div>
+
+  <Footer
+    filmCount={films.length}
+    cinemaCount={cinemas.length}
+    sessionCount={sessionCount}
+  />
+</Base>
