@@ -98,8 +98,10 @@ export async function fetchCinemas(): Promise<Cinema[]> {
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    if (!data.ok || !data.cinemas?.length) throw new Error('Sense cinemes');
-    return data.cinemas.map((c: Record<string, unknown>) => ({
+    if (!data.ok) throw new Error(data.error || 'API error');
+    // API may return empty list — return it as-is, caller can derive from sessions
+    const list = (data.cinemas as Array<Record<string, unknown>>) || [];
+    return list.map(c => ({
       id:       (c.id as string)       || '',
       name:     (c.name as string)     || '',
       address:  (c.address as string)  || '',
@@ -109,7 +111,7 @@ export async function fetchCinemas(): Promise<Cinema[]> {
       lng:      (c.lng as number)      || null,
     }));
   } catch (e) {
-    console.warn('[filmcat] Usant cinemes de mostra:', (e as Error).message);
-    return FALLBACK_CINEMAS;
+    console.warn('[filmcat] fetchCinemas error:', (e as Error).message);
+    return [];
   }
 }

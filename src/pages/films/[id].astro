@@ -1,0 +1,240 @@
+---
+// films/[id].astro — individual film detail page
+// URL: /films/balandrau-vent-salvatge
+import Base   from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+import { fetchFilms }    from '../../lib/filmcat';
+import { fetchTMDBPoster } from '../../lib/tmdb';
+import { slugify }       from '../../lib/slug';
+
+const { id } = Astro.params; // slug from URL
+
+// Fetch all films and find the matching one
+const { films, comingSoon } = await fetchFilms();
+const allFilms = [...films, ...comingSoon];
+const film = allFilms.find(f => slugify(f.title) === id);
+
+// 404 if not found
+if (!film) {
+  return Astro.redirect('/', 302);
+}
+
+// Fetch TMDB data for this specific film
+const tmdb = await fetchTMDBPoster(film.searchTitle, film.year);
+if (tmdb) {
+  film.posterPath   = tmdb.posterPath;
+  film.backdropPath = tmdb.backdropPath;
+  film._tmdbId      = tmdb.tmdbId;
+}
+
+const siteUrl    = Astro.site?.toString().replace(/\/$/, '') || 'https://filmcat.cat';
+const filmSlug   = slugify(film.title);
+const canonicalUrl = `${siteUrl}/films/${filmSlug}`;
+const posterUrl  = film.posterPath  ? `https://image.tmdb.org/t/p/w500${film.posterPath}`  : null;
+const backdropUrl= film.backdropPath? `https://image.tmdb.org/t/p/w780${film.backdropPath}` : null;
+
+const description = film.synopsis
+  ? film.synopsis.slice(0, 160).replace(/\s+\S*$/, '') + '…'
+  : `${film.title} — Cinema en Català. Horaris i sessions a Catalunya.`;
+
+const isVO      = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const versionLabel: Record<string, string> = {
+  VD: 'Versió Doblada', VO: 'Versió Original', VOSC: 'Versió Original Subtitulada en Català',
+  VOSE: 'Versió Original Subtitulada en Espanyol',
+};
+
+// Session count
+const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
+
+// JSON-LD Movie schema
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Movie',
+  name: film.title,
+  ...(film.titleOriginal && film.titleOriginal !== film.title
+    ? { alternateName: film.titleOriginal } : {}),
+  description: film.synopsis || '',
+  datePublished: String(film.year),
+  ...(film.director ? { director: { '@type': 'Person', name: film.director } } : {}),
+  ...(posterUrl ? { image: posterUrl } : {}),
+  url: canonicalUrl,
+  inLanguage: 'ca',
+  offers: film.sessions.length > 0 ? {
+    '@type': 'Offer',
+    availability: 'https://schema.org/InStock',
+    priceCurrency: 'EUR',
+  } : undefined,
+  ...(film._trailerKey ? {
+    trailer: {
+      '@type': 'VideoObject',
+      name: `Tràiler de ${film.title}`,
+      embedUrl: `https://www.youtube.com/embed/${film._trailerKey}`,
+    }
+  } : {}),
+};
+const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
+
+// Color fallback for placeholder
+const colorRe = /^#[0-9a-fA-F]{3,6}$/;
+const c1 = colorRe.test(film.color1) ? film.color1 : '#111';
+const c2 = colorRe.test(film.color2) ? film.color2 : '#222';
+
+// Abbreviation for poster placeholder
+const abbr = film.title
+  .split(' ').filter(w => w.length > 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+
+// Maps URL helper
+function mapsUrl(cinema: string, city: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cinema}, ${city}`)}`;
+}
+
+// Cache
+Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
+---
+
+<Base
+  title={`${film.title} — FILMCAT`}
+  description={description}
+  ogImage={posterUrl}
+  canonical={canonicalUrl}
+>
+  <Header />
+
+  <main id="main-content">
+    <div class="film-page">
+
+      <!-- ── HERO ── -->
+      <div class="film-hero">
+        {backdropUrl
+          ? <img class="film-backdrop-img" src={backdropUrl} alt="" aria-hidden="true" decoding="async" />
+          : <div class="film-backdrop-img" style={`background:linear-gradient(135deg,${c1},${c2})`} aria-hidden="true"></div>
+        }
+        <div class="film-backdrop-gradient" aria-hidden="true"></div>
+        <div class="film-hero-content">
+          <div class="film-poster">
+            {posterUrl
+              ? <img src={posterUrl} alt={`Pòster oficial de ${film.title}`} width="120" height="180" decoding="async" />
+              : <div class="poster-placeholder" style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`} aria-hidden="true">
+                  <svg viewBox="0 0 100 88" width="32" style="opacity:.25"><polygon points="50,0 100,88 0,88" fill="white"/></svg>
+                  <div class="abbr" style="font-size:1rem">{abbr}</div>
+                </div>
+            }
+          </div>
+          <div class="film-hero-info">
+            <h1 class="film-title">{film.title}</h1>
+            {film.titleOriginal && film.titleOriginal !== film.title &&
+              <p class="film-original-title">{film.titleOriginal}</p>
+            }
+            <div class="film-tags">
+              <span class={`badge${isVO ? ' vo' : ''}`}>{film.version}</span>
+              {film.genre && <span class="tag">{film.genre.split(' · ')[0]}</span>}
+              {film.year  && <span class="tag">{film.year}</span>}
+              {film.director && <span class="tag">{film.director}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BODY ── -->
+      <div class="film-body">
+
+        <a href="/" class="film-back-link" aria-label="Tornar a la cartellera">
+          ← Cartellera
+        </a>
+
+        <!-- Trailer -->
+        {film._trailerKey && (
+          <div>
+            <a
+              href={`https://www.youtube.com/watch?v=${film._trailerKey}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="trailer-btn"
+              aria-label={`Veure el tràiler de ${film.title} a YouTube`}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/>
+              </svg>
+              Veure tràiler
+            </a>
+          </div>
+        )}
+
+        <!-- Synopsis -->
+        {film.synopsis && (
+          <div>
+            <h2 class="film-section-title">Sinopsi</h2>
+            <p class="film-synopsis">{film.synopsis}</p>
+          </div>
+        )}
+
+        <!-- Version info -->
+        {versionLabel[film.version] && (
+          <div>
+            <h2 class="film-section-title">Versió</h2>
+            <p class="film-synopsis">{versionLabel[film.version]}</p>
+          </div>
+        )}
+
+        <!-- Sessions -->
+        <div>
+          <h2 class="film-section-title">
+            {film.sessions.length > 0
+              ? `Sessions disponibles — ${sessionCount} horaris`
+              : 'Sessions'}
+          </h2>
+
+          {film.sessions.length === 0 ? (
+            <p class="status-msg">Properament — Sessions pendent de confirmar</p>
+          ) : (
+            <div class="sessions-grid" role="list" aria-label="Sessions disponibles">
+              {film.sessions.map(session => {
+                const isSessionVO = ['VO', 'VOSC', 'VOSE'].includes(session.lang);
+                return (
+                  <div class="session-cinema" role="listitem">
+                    <div class="session-cinema-header">
+                      <div>
+                        <div class="session-cinema-name-row">
+                          <span class="session-cinema-name">{session.cinema}</span>
+                          <a
+                            href={mapsUrl(session.cinema, session.city)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="session-maps-link"
+                            aria-label={`Veure ${session.cinema} a Google Maps`}
+                          >Veure</a>
+                        </div>
+                        <div class="session-cinema-city">{session.city}</div>
+                      </div>
+                      <span class={`badge${isSessionVO ? ' vo' : ''}`}>{session.lang}</span>
+                    </div>
+                    <div class="session-times" role="group" aria-label={`Horaris a ${session.cinema}`}>
+                      {session.times.map(time => (
+                        <span class="session-time" aria-label={`${time} a ${session.cinema}`}>
+                          {time}
+                          <span class="session-time-lang" aria-hidden="true">{session.lang}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer
+    filmCount={0}
+    cinemaCount={0}
+    sessionCount={sessionCount}
+  />
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json" set:html={jsonLdStr}></script>
+</Base>

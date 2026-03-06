@@ -1,17 +1,18 @@
 ---
-// index.astro — SSR entry point: fetch all data server-side, render HTML
-import Base      from '../layouts/Base.astro';
-import Header    from '../components/Header.astro';
-import Hero      from '../components/Hero.astro';
-import FilmCard  from '../components/FilmCard.astro';
+// index.astro — SSR home page: fetch all data, render HTML with structured data
+import Base       from '../layouts/Base.astro';
+import Header     from '../components/Header.astro';
+import Hero       from '../components/Hero.astro';
+import FilmCard   from '../components/FilmCard.astro';
 import CinemaCard from '../components/CinemaCard.astro';
-import Footer    from '../components/Footer.astro';
+import Footer     from '../components/Footer.astro';
 
-import { fetchFilms, fetchCinemas }  from '../lib/filmcat';
-import { fetchTMDBPoster }           from '../lib/tmdb';
+import { fetchFilms, fetchCinemas } from '../lib/filmcat';
+import { fetchTMDBPoster }          from '../lib/tmdb';
+import { slugify }                  from '../lib/slug';
 
 // ── Fetch all data in parallel ──
-const [{ films, comingSoon }, cinemas] = await Promise.all([
+const [{ films, comingSoon }, cinemasFromApi] = await Promise.all([
   fetchFilms(),
   fetchCinemas(),
 ]);
@@ -30,13 +31,45 @@ await Promise.allSettled(
 
 // ── Count films per cinema ──
 const cinemaFilmCount: Record<string, number> = {};
+const cinemaCityMap:   Record<string, string> = {};
 for (const film of films) {
   for (const session of film.sessions) {
     cinemaFilmCount[session.cinema] = (cinemaFilmCount[session.cinema] ?? 0) + 1;
+    cinemaCityMap[session.cinema]   = session.city;
   }
 }
-for (const cinema of cinemas) {
-  cinema.films = cinemaFilmCount[cinema.name] ?? 0;
+
+// ── Cinemas: use API data if available, else derive from sessions ──
+import type { Cinema } from '../lib/types';
+let cinemas: Cinema[];
+
+if (cinemasFromApi.length > 0) {
+  cinemas = cinemasFromApi;
+  for (const cinema of cinemas) {
+    cinema.films = cinemaFilmCount[cinema.name] ?? 0;
+  }
+} else {
+  // Derive cinemas from session data (Gencat cinema XML is often empty)
+  const seen = new Set<string>();
+  cinemas = [];
+  for (const film of films) {
+    for (const session of film.sessions) {
+      if (!seen.has(session.cinema)) {
+        seen.add(session.cinema);
+        cinemas.push({
+          id:       session.cinema,
+          name:     session.cinema,
+          address:  '',
+          city:     session.city,
+          province: '',
+          lat:      null,
+          lng:      null,
+          films:    cinemaFilmCount[session.cinema] ?? 1,
+        });
+      }
+    }
+  }
+  cinemas.sort((a, b) => (b.films ?? 0) - (a.films ?? 0));
 }
 
 // ── Stats ──
@@ -44,11 +77,34 @@ const sessionCount = films.reduce((a, f) => a + f.sessions.reduce((b, s) => b + 
 
 // ── Cache header: 7 days, revalidate in background ──
 Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
+
+// ── JSON-LD ItemList ──
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://filmcat.cat';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Cartellera de Cinema en Català',
+  description: 'Totes les pel·lícules en català als cinemes de Catalunya',
+  numberOfItems: films.length,
+  itemListElement: films.map((film, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Movie',
+      name: film.title,
+      url:  `${siteUrl}/films/${slugify(film.title)}`,
+      ...(film.posterPath ? { image: `https://image.tmdb.org/t/p/w500${film.posterPath}` } : {}),
+      datePublished: String(film.year),
+    },
+  })),
+};
+const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
 ---
 
 <Base
   title="FILMCAT — Cinema en Català"
   description="Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes actualitzats cada dijous."
+  canonical={`${siteUrl}/`}
 >
   <Header />
 
@@ -62,8 +118,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
 
     <!-- ── CARTELLERA ── -->
     <section aria-labelledby="cartellera-h" id="avui" style="padding-top: 32px">
-
-      <!-- Filter bar (buttons activate client-side JS in Phase 2) -->
       <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per versió">
         <button class="filter-btn active" data-filter="all"  aria-pressed="true">Totes</button>
         <button class="filter-btn"        data-filter="VD"   aria-pressed="false">Doblada (VD)</button>
@@ -108,8 +162,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
 
   </main>
 
-  <!-- ── MODAL shell (Phase 2 adds JS to populate it) ── -->
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <!-- ── MODAL (quick-view, not used when cards are links) ── -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true"
+       aria-labelledby="modalTitle" aria-hidden="true">
     <div class="modal" id="modal" tabindex="-1">
       <button class="close-btn" id="modalCloseBtn" aria-label="Tancar">✕</button>
       <div class="modal-hero" aria-hidden="true">
@@ -136,4 +191,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
     cinemaCount={cinemas.length}
     sessionCount={sessionCount}
   />
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json" set:html={jsonLdStr}></script>
 </Base>

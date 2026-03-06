@@ -1,9 +1,9 @@
 ---
-// FilmCard.astro — static film card with data-film + data-version for client islands
-// NOTE: Astro templates auto-escape {expr} — no need to call sanitize() on text content.
-// sanitize() is only needed before set:html directives (not used here).
+// FilmCard.astro — film card linking to /films/[slug]
+// data-film kept for JS modal fallback; data-version for filter bar
 import type { Film } from '../lib/types';
 import { TMDB_IMG } from '../lib/tmdb';
+import { slugify } from '../lib/slug';
 
 interface Props {
   film: Film;
@@ -12,20 +12,17 @@ const { film } = Astro.props;
 
 const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
 const isUpcoming   = film.sessions.length === 0;
+const slug         = slugify(film.title);
+const href         = `/films/${slug}`;
 
 // Poster URL (server-side resolved)
 const posterSrc = film.posterPath ? `${TMDB_IMG}${film.posterPath}` : null;
 
 // Abbreviation for placeholder
 const abbr = film.title
-  .split(' ')
-  .filter(w => w.length > 2)
-  .map(w => w[0])
-  .join('')
-  .toUpperCase()
-  .slice(0, 3);
+  .split(' ').filter(w => w.length > 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
 
-const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const isVO      = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const genreFirst = film.genre ? film.genre.split(' · ')[0] : '';
 
 // Validate colors — only hex values allowed
@@ -33,7 +30,7 @@ const colorRe = /^#[0-9a-fA-F]{3,6}$/;
 const c1 = colorRe.test(film.color1) ? film.color1 : '#111';
 const c2 = colorRe.test(film.color2) ? film.color2 : '#222';
 
-// Serialize film data for modal (client-side island reads this)
+// Serialize film data for JS modal (quick-view fallback when JS intercepts click)
 const filmJson = JSON.stringify({
   id:           film.id,
   title:        film.title,
@@ -44,6 +41,8 @@ const filmJson = JSON.stringify({
   year:         film.year,
   genre:        film.genre,
   duration:     film.duration,
+  color1:       film.color1,
+  color2:       film.color2,
   posterPath:   film.posterPath,
   backdropPath: film.backdropPath,
   _tmdbId:      film._tmdbId ?? null,
@@ -51,10 +50,10 @@ const filmJson = JSON.stringify({
   sessions:     film.sessions,
 });
 ---
-<article
+<a
   class="card"
+  href={href}
   role="listitem"
-  tabindex="0"
   data-version={film.version}
   data-film={filmJson}
   aria-label={`${film.title} (${film.year}), versió ${film.version}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
@@ -97,4 +96,4 @@ const filmJson = JSON.stringify({
       <span>{genreFirst}</span>
     </div>
   </div>
-</article>
+</a>
