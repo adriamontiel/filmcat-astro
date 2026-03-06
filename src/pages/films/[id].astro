@@ -45,8 +45,13 @@ const versionLabel: Record<string, string> = {
   VOSE: 'Versió Original Subtitulada en Espanyol',
 };
 
-// Session count
+// Session count for this film (used in the sessions heading)
 const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
+
+// Global stats for the footer (same as home page)
+const totalFilmCount    = films.length;
+const totalCinemaCount  = new Set(films.flatMap(f => f.sessions.map(s => s.cinema))).size;
+const totalSessionCount = films.reduce((a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0), 0);
 
 // JSON-LD Movie schema
 const jsonLd = {
@@ -230,9 +235,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
   </main>
 
   <Footer
-    filmCount={0}
-    cinemaCount={0}
-    sessionCount={sessionCount}
+    filmCount={totalFilmCount}
+    cinemaCount={totalCinemaCount}
+    sessionCount={totalSessionCount}
   />
 
   <!-- JSON-LD structured data -->
