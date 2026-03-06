@@ -148,6 +148,12 @@
   function attachCarouselListeners(carousel) {
     if (!carousel) return;
     carousel.addEventListener('click', e => {
+      // Save scroll position when navigating to a film page (cross-browser, incl. Safari)
+      const link = e.target.closest('a[href^="/films/"]');
+      if (link) {
+        sessionStorage.setItem('filmcat_scroll', String(window.scrollY));
+        return;
+      }
       const card = e.target.closest('[data-film]');
       if (!card || card.tagName === 'A') return;
       try { openModal(JSON.parse(card.dataset.film)); } catch (_) {}
@@ -163,6 +169,13 @@
 
   // ── INIT — runs on every page load, including View Transitions navigations ──
   function init() {
+    // Restore scroll position when returning to home page (cross-browser, incl. Safari)
+    const savedScroll = sessionStorage.getItem('filmcat_scroll');
+    if (savedScroll !== null && document.getElementById('mainCarousel')) {
+      sessionStorage.removeItem('filmcat_scroll');
+      requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll, 10)));
+    }
+
     // Mobile nav
     const hamburger = document.getElementById('hamburgerBtn');
     const mobileNav = document.getElementById('mobile-nav');
