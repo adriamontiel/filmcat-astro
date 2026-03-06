@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 interface Props {
   title?:       string;
   description?: string;
@@ -37,6 +39,7 @@ const {
 {ogImage && <meta name="twitter:image" content={ogImage}>}
 <title>{title}</title>
 {canonical && <link rel="canonical" href={canonical}>}
+<ViewTransitions />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style is:global>

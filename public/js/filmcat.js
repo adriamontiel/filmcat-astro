@@ -1,6 +1,7 @@
 /* filmcat.js — vanilla JS interactivity for FILMCAT Astro
  * Covers: mobile nav, filter bar, modal (card click → quick-view)
  * All HTML injected via innerHTML uses sanitize() for XSS safety.
+ * Uses astro:page-load for View Transitions compatibility.
  */
 (function () {
   'use strict';
@@ -21,66 +22,7 @@
     return /^https?:\/\//i.test(t) ? t : '#';
   }
 
-  // ── MOBILE NAV ──
-  const hamburger = document.getElementById('hamburgerBtn');
-  const mobileNav = document.getElementById('mobile-nav');
-  if (hamburger && mobileNav) {
-    hamburger.addEventListener('click', () => {
-      const expanded = hamburger.getAttribute('aria-expanded') === 'true';
-      hamburger.setAttribute('aria-expanded', String(!expanded));
-      mobileNav.setAttribute('aria-hidden', String(expanded));
-      mobileNav.classList.toggle('open', !expanded);
-      document.body.style.overflow = expanded ? '' : 'hidden';
-    });
-    mobileNav.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        hamburger.setAttribute('aria-expanded', 'false');
-        mobileNav.setAttribute('aria-hidden', 'true');
-        mobileNav.classList.remove('open');
-        document.body.style.overflow = '';
-      });
-    });
-  }
-
-  // ── FILTER BAR ──
-  const filterBar = document.querySelector('.filter-bar');
-  if (filterBar) {
-    filterBar.addEventListener('click', e => {
-      const btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      const version = btn.dataset.filter || 'all';
-      filterBar.querySelectorAll('.filter-btn').forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-pressed', 'true');
-
-      const cards = document.querySelectorAll('#mainCarousel .card');
-      let visible = 0;
-      cards.forEach(card => {
-        const show = version === 'all' || card.dataset.version === version;
-        card.style.display = show ? '' : 'none';
-        if (show) visible++;
-      });
-
-      let msg = document.getElementById('filterEmptyMsg');
-      if (!visible) {
-        if (!msg) {
-          msg = document.createElement('p');
-          msg.id = 'filterEmptyMsg';
-          msg.className = 'status-msg';
-          msg.setAttribute('role', 'status');
-          msg.textContent = 'Cap pel·lícula amb aquesta versió a la cartellera actual.';
-          document.getElementById('mainCarousel')?.appendChild(msg);
-        }
-      } else {
-        msg?.remove();
-      }
-    });
-  }
-
-  // ── MODAL ──
+  // ── MODAL STATE (persists across navigations) ──
   let lastFocused = null;
 
   function posterPlaceholder(film) {
@@ -99,13 +41,11 @@
   function openModal(film) {
     lastFocused = document.activeElement;
 
-    // Title + synopsis (textContent = XSS-safe)
     const titleEl = document.getElementById('modalTitle');
     const synopsisEl = document.getElementById('modalSynopsis');
     if (titleEl)    titleEl.textContent    = film.title    || '';
     if (synopsisEl) synopsisEl.textContent = film.synopsis || '';
 
-    // Poster
     const pi = document.getElementById('modalPosterImg');
     const posterWrap = pi?.closest('.modal-poster');
     if (pi) {
@@ -117,7 +57,6 @@
       }
     }
 
-    // Backdrop
     const bi = document.getElementById('modalBgImg');
     if (bi) {
       if (film.backdropPath) {
@@ -132,7 +71,6 @@
       }
     }
 
-    // Tags
     const tagsEl = document.getElementById('modalTags');
     if (tagsEl) {
       tagsEl.innerHTML = [film.version, film.genre, film.duration, String(film.year)]
@@ -141,7 +79,6 @@
         .join('');
     }
 
-    // Sessions
     const sg = document.getElementById('modalSessions');
     if (sg) {
       if (!film.sessions?.length) {
@@ -174,7 +111,6 @@
       }
     }
 
-    // Trailer
     const trailerDiv = document.getElementById('modalTrailer');
     if (trailerDiv) {
       trailerDiv.innerHTML = '';
@@ -191,7 +127,6 @@
       }
     }
 
-    // Show modal
     const bd = document.getElementById('modalBackdrop');
     if (bd) {
       bd.classList.add('open');
@@ -210,12 +145,11 @@
     lastFocused?.focus();
   }
 
-  // Card click → open modal (only for non-link cards)
   function attachCarouselListeners(carousel) {
     if (!carousel) return;
     carousel.addEventListener('click', e => {
       const card = e.target.closest('[data-film]');
-      if (!card || card.tagName === 'A') return; // Phase 3+: card is a link, navigate normally
+      if (!card || card.tagName === 'A') return;
       try { openModal(JSON.parse(card.dataset.film)); } catch (_) {}
     });
     carousel.addEventListener('keydown', e => {
@@ -226,27 +160,94 @@
       try { openModal(JSON.parse(card.dataset.film)); } catch (_) {}
     });
   }
-  attachCarouselListeners(document.getElementById('mainCarousel'));
-  attachCarouselListeners(document.getElementById('upcomingCarousel'));
 
-  // Close modal
-  document.getElementById('modalBackdrop')?.addEventListener('click', e => {
-    if (e.target === document.getElementById('modalBackdrop')) closeModal();
-  });
-  document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
-
-  // Trap focus inside modal + Escape key
-  document.getElementById('modal')?.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); return; }
-    if (e.key !== 'Tab') return;
-    const modal = document.getElementById('modal');
-    const focusable = [...modal.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])')];
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (e.shiftKey) {
-      if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
-    } else {
-      if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+  // ── INIT — runs on every page load, including View Transitions navigations ──
+  function init() {
+    // Mobile nav
+    const hamburger = document.getElementById('hamburgerBtn');
+    const mobileNav = document.getElementById('mobile-nav');
+    if (hamburger && mobileNav) {
+      hamburger.addEventListener('click', () => {
+        const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+        hamburger.setAttribute('aria-expanded', String(!expanded));
+        mobileNav.setAttribute('aria-hidden', String(expanded));
+        mobileNav.classList.toggle('open', !expanded);
+        document.body.style.overflow = expanded ? '' : 'hidden';
+      });
+      mobileNav.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          hamburger.setAttribute('aria-expanded', 'false');
+          mobileNav.setAttribute('aria-hidden', 'true');
+          mobileNav.classList.remove('open');
+          document.body.style.overflow = '';
+        });
+      });
     }
-  });
+
+    // Filter bar
+    const filterBar = document.querySelector('.filter-bar');
+    if (filterBar) {
+      filterBar.addEventListener('click', e => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        const version = btn.dataset.filter || 'all';
+        filterBar.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+
+        const cards = document.querySelectorAll('#mainCarousel .card');
+        let visible = 0;
+        cards.forEach(card => {
+          const show = version === 'all' || card.dataset.version === version;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+
+        let msg = document.getElementById('filterEmptyMsg');
+        if (!visible) {
+          if (!msg) {
+            msg = document.createElement('p');
+            msg.id = 'filterEmptyMsg';
+            msg.className = 'status-msg';
+            msg.setAttribute('role', 'status');
+            msg.textContent = 'Cap pel·lícula amb aquesta versió a la cartellera actual.';
+            document.getElementById('mainCarousel')?.appendChild(msg);
+          }
+        } else {
+          msg?.remove();
+        }
+      });
+    }
+
+    // Carousels
+    attachCarouselListeners(document.getElementById('mainCarousel'));
+    attachCarouselListeners(document.getElementById('upcomingCarousel'));
+
+    // Modal close handlers
+    document.getElementById('modalBackdrop')?.addEventListener('click', e => {
+      if (e.target === document.getElementById('modalBackdrop')) closeModal();
+    });
+    document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
+
+    // Trap focus inside modal + Escape key
+    document.getElementById('modal')?.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeModal(); return; }
+      if (e.key !== 'Tab') return;
+      const modal = document.getElementById('modal');
+      const focusable = [...modal.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])')];
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    });
+  }
+
+  // astro:page-load fires on first load AND on every View Transitions navigation
+  document.addEventListener('astro:page-load', init);
 
 })();
