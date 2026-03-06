@@ -222,6 +222,17 @@
       });
     }
 
+    // Back link → history.back() si hi ha historial, fallback a href="/"
+    const backLink = document.getElementById('backLink');
+    if (backLink) {
+      backLink.addEventListener('click', e => {
+        if (history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
+      });
+    }
+
     // Carousels
     attachCarouselListeners(document.getElementById('mainCarousel'));
     attachCarouselListeners(document.getElementById('upcomingCarousel'));
