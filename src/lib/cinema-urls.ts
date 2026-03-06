@@ -91,4 +91,22 @@ export const CINEMA_URLS: Record<string, string> = {
   'Octubre Centre de Cultura Contemporània de València':    'https://octubre.cat',
   'Lluïsos d\'Horta':                                       'https://lluisos.net',
 
+  // ── NOU (afegits automàticament) ────────────────────────────────────────
+  'Cine Bic':                                               'https://www.cinebic.com',
+  'MCB Cinema Calafell':                                    'https://www.mcbcinemas.com',
+  'Cinemes Illa Carlemany de Les Escaldes':                 'https://cinemesilla.com',
+  'Cinema Montgrí de Torroella de Montgrí':                 'https://cinemamontgri.cat',
+  'Bosque Multicines':                                      'https://www.moobycinemas.com/bosque',
+  'Cinema Ribes de Sant Pere de Ribes':                     'https://www.cinemaribes.com',
+  'Cine Alhambra de La Garriga':                            'https://www.cinealhambra.com',
+  'Cinemes Moix Negre':                                     'https://www.cinesmoixnegre.org',
+  'Cines Lys de València':                                  'https://cineslys.com',
+  'Sala Zazie de Vilafranca del Penedès - CineClub Vilafranca': 'https://cineclubvila.cat',
+  'Cinema Rambla de l\'Art de Cambrils':                    'https://www.rambladelart-cambrils.com',
+  'Cine París de Solsona':                                  'https://www.cineparis.cat',
+  'Mont-Àgora Cinemes de Santa Margarida de Montbui':       'https://www.cinemesmontagora.com',
+  'Cinema Edison de Granollers':                            'https://cinemaedison.cat',
+  'Ateneu Cinema d\'Igualada':                              'https://ateneucinema.cat',
+  'Cinema Catalunya de Ribes de Freser':                    'https://amicscinevallderibes.com',
+
 };
