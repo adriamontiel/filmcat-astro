@@ -8,6 +8,7 @@ import Footer from '../../components/Footer.astro';
 import { fetchFilms }    from '../../lib/filmcat';
 import { fetchTMDBPoster } from '../../lib/tmdb';
 import { slugify }       from '../../lib/slug';
+import { CINEMA_URLS }   from '../../lib/cinema-urls';
 
 const { id } = Astro.params; // slug from URL
 
@@ -202,14 +203,17 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                     <div class="session-cinema-header">
                       <div>
                         <div class="session-cinema-name-row">
-                          <span class="session-cinema-name">{session.cinema}</span>
+                          {CINEMA_URLS[session.cinema]
+                            ? <a href={CINEMA_URLS[session.cinema]} target="_blank" rel="noopener noreferrer" class="session-cinema-name session-cinema-name-link" aria-label={`Web oficial de ${session.cinema}`}>{session.cinema}</a>
+                            : <span class="session-cinema-name">{session.cinema}</span>
+                          }
                           <a
                             href={mapsUrl(session.cinema, session.city)}
                             target="_blank"
                             rel="noopener noreferrer"
                             class="session-maps-link"
-                            aria-label={`Veure ${session.cinema} a Google Maps`}
-                          >Veure</a>
+                            aria-label={`Com arribar a ${session.cinema}`}
+                          >Com arribar</a>
                         </div>
                         <div class="session-cinema-city">{session.city}</div>
                       </div>
