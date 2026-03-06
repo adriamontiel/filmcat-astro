@@ -207,13 +207,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                             ? <a href={CINEMA_URLS[session.cinema]} target="_blank" rel="noopener noreferrer" class="session-cinema-name session-cinema-name-link" aria-label={`Web oficial de ${session.cinema}`}>{session.cinema}</a>
                             : <span class="session-cinema-name">{session.cinema}</span>
                           }
-                          <a
-                            href={mapsUrl(session.cinema, session.city)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="session-maps-link"
-                            aria-label={`Com arribar a ${session.cinema}`}
-                          >Com arribar</a>
                         </div>
                         <div class="session-cinema-city">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -221,6 +214,14 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                             <circle cx="12" cy="10" r="3"/>
                           </svg>
                           {session.city}
+                          <span aria-hidden="true" class="session-city-sep">·</span>
+                          <a
+                            href={mapsUrl(session.cinema, session.city)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="session-maps-link"
+                            aria-label={`Com arribar a ${session.cinema}`}
+                          >Com arribar</a>
                         </div>
                       </div>
                       <span class={`badge${isSessionVO ? ' vo' : ''}`}>{session.lang}</span>
