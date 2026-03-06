@@ -197,41 +197,99 @@
       });
     }
 
-    // Filter bar
-    const filterBar = document.querySelector('.filter-bar');
-    if (filterBar) {
-      filterBar.addEventListener('click', e => {
-        const btn = e.target.closest('.filter-btn');
-        if (!btn) return;
-        const version = btn.dataset.filter || 'all';
-        filterBar.querySelectorAll('.filter-btn').forEach(b => {
-          b.classList.remove('active');
-          b.setAttribute('aria-pressed', 'false');
-        });
-        btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
+    // ── FILTERS (province × version) ──
+    let activeProvince = 'all';
+    let activeVersion  = 'all';
 
-        const cards = document.querySelectorAll('#mainCarousel .card');
-        let visible = 0;
-        cards.forEach(card => {
-          const show = version === 'all' || card.dataset.version === version;
-          card.style.display = show ? '' : 'none';
-          if (show) visible++;
-        });
-
-        let msg = document.getElementById('filterEmptyMsg');
-        if (!visible) {
-          if (!msg) {
-            msg = document.createElement('p');
-            msg.id = 'filterEmptyMsg';
-            msg.className = 'status-msg';
-            msg.setAttribute('role', 'status');
-            msg.textContent = 'Cap pel·lícula amb aquesta versió a la cartellera actual.';
-            document.getElementById('mainCarousel')?.appendChild(msg);
-          }
-        } else {
-          msg?.remove();
+    function applyFilters() {
+      const cards = document.querySelectorAll('#mainCarousel .card');
+      let visible = 0;
+      cards.forEach(card => {
+        const provinces  = (card.dataset.province || '').split(' ');
+        const provinceOk = activeProvince === 'all' || provinces.includes(activeProvince);
+        const versionOk  = activeVersion  === 'all' || card.dataset.version === activeVersion;
+        const show = provinceOk && versionOk;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      let msg = document.getElementById('filterEmptyMsg');
+      if (!visible) {
+        if (!msg) {
+          msg = document.createElement('p');
+          msg.id = 'filterEmptyMsg';
+          msg.className = 'status-msg';
+          msg.setAttribute('role', 'status');
+          msg.textContent = 'Cap pel·lícula amb aquesta combinació de filtres.';
+          document.getElementById('mainCarousel')?.appendChild(msg);
         }
+      } else {
+        msg?.remove();
+      }
+    }
+
+    // Disable version buttons that have no films in the current province,
+    // and reset the active version if it becomes unavailable.
+    function syncVersionButtons() {
+      const versionBar = document.querySelector('.filter-bar[data-filter-type="version"]');
+      if (!versionBar) return;
+
+      const available = new Set(['all']);
+      document.querySelectorAll('#mainCarousel .card').forEach(card => {
+        const provinces = (card.dataset.province || '').split(' ');
+        if (activeProvince === 'all' || provinces.includes(activeProvince)) {
+          available.add(card.dataset.version || '');
+        }
+      });
+
+      let mustReset = false;
+      versionBar.querySelectorAll('.filter-btn').forEach(btn => {
+        const f = btn.dataset.filter || 'all';
+        if (available.has(f)) {
+          btn.removeAttribute('aria-disabled');
+        } else {
+          btn.setAttribute('aria-disabled', 'true');
+          if (activeVersion === f) mustReset = true;
+        }
+      });
+
+      if (mustReset) {
+        activeVersion = 'all';
+        versionBar.querySelectorAll('.filter-btn').forEach(b => {
+          const isAll = (b.dataset.filter || 'all') === 'all';
+          b.classList.toggle('active', isAll);
+          b.setAttribute('aria-pressed', isAll ? 'true' : 'false');
+        });
+      }
+    }
+
+    // Province filter bar
+    const provinceBar = document.querySelector('.filter-bar[data-filter-type="province"]');
+    if (provinceBar) {
+      provinceBar.addEventListener('click', e => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
+        activeProvince = btn.dataset.provinceFilter || 'all';
+        provinceBar.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        syncVersionButtons();
+        applyFilters();
+      });
+    }
+
+    // Version filter bar
+    const versionBar = document.querySelector('.filter-bar[data-filter-type="version"]');
+    if (versionBar) {
+      versionBar.addEventListener('click', e => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
+        activeVersion = btn.dataset.filter || 'all';
+        versionBar.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        applyFilters();
       });
     }
 

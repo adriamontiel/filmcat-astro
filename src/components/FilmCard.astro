@@ -4,6 +4,7 @@
 import type { Film } from '../lib/types';
 import { TMDB_IMG } from '../lib/tmdb';
 import { slugify } from '../lib/slug';
+import { cityToProvince } from '../lib/provinces';
 
 interface Props {
   film: Film;
@@ -24,6 +25,11 @@ const abbr = film.title
 
 const isVO      = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const genreFirst = film.genre ? film.genre.split(' · ')[0] : '';
+
+// Space-separated list of provinces where this film is showing (for province filter)
+const filmProvinces = film.sessions.length > 0
+  ? [...new Set(film.sessions.map(s => cityToProvince(s.city)))].join(' ')
+  : 'Barcelona';
 
 // Validate colors — only hex values allowed
 const colorRe = /^#[0-9a-fA-F]{3,6}$/;
@@ -55,6 +61,7 @@ const filmJson = JSON.stringify({
   href={href}
   role="listitem"
   data-version={film.version}
+  data-province={filmProvinces}
   data-film={filmJson}
   aria-label={`${film.title} (${film.year}), versió ${film.version}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
 >

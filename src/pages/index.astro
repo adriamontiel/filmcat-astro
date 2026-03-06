@@ -10,6 +10,7 @@ import Footer     from '../components/Footer.astro';
 import { fetchFilms, fetchCinemas } from '../lib/filmcat';
 import { fetchTMDBPoster }          from '../lib/tmdb';
 import { slugify }                  from '../lib/slug';
+import { cityToProvince, PROVINCE_ORDER } from '../lib/provinces';
 
 // ── Fetch all data in parallel ──
 const [{ films, comingSoon }, cinemasFromApi] = await Promise.all([
@@ -72,6 +73,13 @@ if (cinemasFromApi.length > 0) {
   cinemas.sort((a, b) => (b.films ?? 0) - (a.films ?? 0));
 }
 
+// ── Available provinces this week (only show filter if >1 province) ──
+const allProvinces = new Set<string>();
+for (const film of films) {
+  for (const session of film.sessions) allProvinces.add(cityToProvince(session.city));
+}
+const availableProvinces = PROVINCE_ORDER.filter(p => allProvinces.has(p));
+
 // ── Stats ──
 const sessionCount = films.reduce((a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0), 0);
 
@@ -118,7 +126,16 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
 
     <!-- ── CARTELLERA ── -->
     <section aria-labelledby="cartellera-h" id="avui" style="padding-top: 32px">
-      <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per versió">
+      {availableProvinces.length > 1 && (
+        <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per província" data-filter-type="province">
+          <button class="filter-btn active" data-province-filter="all" aria-pressed="true">Totes</button>
+          {availableProvinces.map(province => (
+            <button class="filter-btn" data-province-filter={province} aria-pressed="false">{province}</button>
+          ))}
+        </div>
+      )}
+
+      <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per versió" data-filter-type="version">
         <button class="filter-btn active" data-filter="all"  aria-pressed="true">Totes</button>
         <button class="filter-btn"        data-filter="VD"   aria-pressed="false">Doblada (VD)</button>
         <button class="filter-btn"        data-filter="VO"   aria-pressed="false">Versió Original</button>

@@ -100,9 +100,14 @@ main { padding: 0 var(--px) 80px; }
 /* ── FILTER BAR ── */
 .filter-bar { display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar + .filter-bar { margin-top: 10px; }
 .filter-btn { flex-shrink: 0; padding: 0.5rem 1.1rem; border-radius: 40px; border: 1.5px solid var(--border); background: transparent; color: var(--text-mid); font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: all 0.18s; text-transform: uppercase; min-height: 44px; }
 .filter-btn:hover { border-color: rgba(192,57,43,.5); color: var(--text); }
 .filter-btn.active { background: var(--red); border-color: var(--red); color: white; }
+/* Disabled state (aria-disabled="true"): visible but non-interactive — WCAG 2.2 */
+.filter-btn[aria-disabled="true"] { opacity: 0.35; cursor: not-allowed; color: var(--muted); }
+.filter-btn[aria-disabled="true"]:hover { border-color: var(--border); color: var(--muted); }
+.filter-btn[aria-disabled="true"]:focus-visible { outline: 2px solid var(--muted); outline-offset: 2px; }
 /* ── SECTION HEADER ── */
 .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-top: 0; }
 .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.625rem,5vw,2.625rem); letter-spacing: 3px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
