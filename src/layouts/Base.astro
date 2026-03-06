@@ -184,6 +184,9 @@ main { padding: 0 var(--px) 80px; }
 .session-times { display: flex; flex-wrap: wrap; gap: 8px; }
 .session-time { background: rgba(192,57,43,.13); border: 1.5px solid rgba(192,57,43,.22); color: var(--text); padding: 0.5rem 0.8rem; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 0.8rem; cursor: pointer; transition: background .15s, border-color .15s; display: flex; align-items: center; gap: 6px; min-height: 44px; }
 .session-time:hover { background: rgba(192,57,43,.28); border-color: var(--red); }
+/* On the film detail page sessions are purely informational — remove interactive styling */
+.film-body .session-time { cursor: default; }
+.film-body .session-time:hover { background: rgba(192,57,43,.13); border-color: rgba(192,57,43,.22); }
 .session-time-lang { font-size: 0.6rem; color: var(--red-light); letter-spacing: .8px; }
 .close-btn { position: absolute; top: 0.875rem; right: 0.875rem; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: rgba(0,0,0,.55); border: 1.5px solid var(--border); color: var(--text); font-size: 1.125rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s; z-index: 10; line-height: 1; }
 .close-btn:hover { background: rgba(192,57,43,.45); }
