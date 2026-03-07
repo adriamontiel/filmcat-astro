@@ -40,3 +40,23 @@
   <a href="#cartellera-h">Cartellera</a>
   <a href="#cinemes">Cinemes</a>
 </nav>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelector('.logo-wrap')?.addEventListener('click', e => {
+      // Clear saved scroll + province so homepage always starts fresh
+      sessionStorage.removeItem('filmcat_scroll');
+      sessionStorage.removeItem('filmcat_province');
+
+      if (window.location.pathname === '/') {
+        // Already on homepage: reset filters in place, scroll to top
+        e.preventDefault();
+        document.querySelector('[data-province-filter="all"]')?.click();
+        document.querySelector('[data-filter="all"]')?.click();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      // On detail page: <a href="/"> navigates normally.
+      // sessionStorage already cleared → init() starts fresh.
+    });
+  });
+</script>
