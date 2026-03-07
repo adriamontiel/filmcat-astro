@@ -217,8 +217,10 @@ footer { position: relative; overflow: hidden; padding: clamp(3rem,8vw,5rem) var
 .footer-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); opacity: 0.5; }
 .footer-logo svg { width: 26px; height: 23px; }
 .footer-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 3px; }
-.footer-note { font-size: 0.7rem; color: var(--muted); letter-spacing: .5px; line-height: 1.7; text-align: right; }
+.footer-note { font-size: 0.7rem; color: var(--muted); letter-spacing: .5px; line-height: 1.7; text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
 .footer-note a { color: var(--red-light); }
+.footer-attribution { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.footer-attribution--author { margin-top: 2px; opacity: 0.7; }
 /* ── MOBILE ── */
 @media (max-width: 640px) {
   nav { display: none; }
@@ -226,7 +228,8 @@ footer { position: relative; overflow: hidden; padding: clamp(3rem,8vw,5rem) var
   h1 { letter-spacing: 1px; }
   .scroll-hint { display: none; }
   .footer-bottom { flex-direction: column; align-items: flex-start; }
-  .footer-note { text-align: left; }
+  .footer-note { text-align: left; align-items: flex-start; }
+  .footer-attribution { justify-content: flex-start; }
   .carousel { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   /* Compact filter buttons on mobile with horizontal scroll — no wrapping,
      saves vertical space. 38px min-height > WCAG 2.2 AA minimum (24px). */

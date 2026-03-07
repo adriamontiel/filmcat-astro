@@ -51,8 +51,15 @@ const { filmCount, cinemaCount, sessionCount } = Astro.props;
         <span class="footer-logo-text">FILMCAT</span>
       </a>
       <div class="footer-note">
-        Dades: <a href="https://www.gencat.cat/llengua/cinema/" target="_blank" rel="noopener noreferrer">Portal Cinema en Català — Generalitat de Catalunya</a><br>
-        Actualitzat cada dijous · Llicència de dades obertes
+        <div class="footer-attribution">
+          Dades de sessions i cinemes: <a href="https://www.gencat.cat/llengua/cinema/" target="_blank" rel="noopener noreferrer">Portal Cinema en Català — Generalitat de Catalunya</a> · Llicència de dades obertes
+        </div>
+        <div class="footer-attribution">
+          Pòsters i sinopsi: <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">The Movie Database (TMDB)</a>
+        </div>
+        <div class="footer-attribution footer-attribution--author">
+          Creat per <a href="https://github.com/adriamontiel" target="_blank" rel="noopener noreferrer">Adrià Montiel</a> · Actualitzat cada dijous
+        </div>
       </div>
     </div>
   </div>
