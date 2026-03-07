@@ -83,6 +83,27 @@ const jsonLd = {
 };
 const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
 
+// JSON-LD BreadcrumbList schema
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Inici',
+      item: siteUrl + '/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: film.title,
+      item: canonicalUrl,
+    },
+  ],
+};
+const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\\/script>');
+
 // Color fallback for placeholder
 const colorRe = /^#[0-9a-fA-F]{3,6}$/;
 const c1 = colorRe.test(film.color1) ? film.color1 : '#111';
@@ -254,6 +275,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" set:html={jsonLdStr}></script>
+  <script type="application/ld+json" set:html={breadcrumbLdStr}></script>
 
   <!-- Province-aware session grouping: reorders sessions when a province filter is active -->
   <script>
