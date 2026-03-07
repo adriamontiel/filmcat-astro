@@ -318,6 +318,23 @@
       });
     }
 
+    // Cinema province filter (independent from the film filters)
+    const cinemaProvinceBar = document.querySelector('.filter-bar[data-filter-type="cinema-province"]');
+    if (cinemaProvinceBar) {
+      cinemaProvinceBar.addEventListener('click', e => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        const selected = btn.dataset.cinemaProvinceFilter || 'all';
+        cinemaProvinceBar.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-cinema-province]').forEach(card => {
+          card.hidden = selected !== 'all' && card.dataset.cinemaProvince !== selected;
+        });
+      });
+    }
+
     // Carousels
     attachCarouselListeners(document.getElementById('mainCarousel'), () => activeProvince);
     attachCarouselListeners(document.getElementById('upcomingCarousel'), () => activeProvince);

@@ -181,14 +181,21 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
       <div class="section-header">
         <h2 class="section-title" id="cinemes-h">Cinemes</h2>
       </div>
-      {cinemaProvinces.map(province => (
-        <div class="cinema-province-group">
-          <h3 class="cinema-province-label">{province}</h3>
-          <div class="cinema-list" role="list">
-            {cinemasByProvince.get(province)!.map(cinema => <CinemaCard cinema={cinema} />)}
-          </div>
+      {cinemaProvinces.length > 1 && (
+        <div class="filter-bar" role="group" aria-label="Filtrar cinemes per província" data-filter-type="cinema-province">
+          <button class="filter-btn active" data-cinema-province-filter="all" aria-pressed="true">Tots</button>
+          {cinemaProvinces.map(province => (
+            <button class="filter-btn" data-cinema-province-filter={province} aria-pressed="false">{province}</button>
+          ))}
         </div>
-      ))}
+      )}
+      <div class="cinema-list" role="list">
+        {PROVINCE_ORDER.flatMap(p =>
+          (cinemasByProvince.get(p) ?? []).map(cinema =>
+            <CinemaCard cinema={cinema} province={p} />
+          )
+        )}
+      </div>
     </section>
 
   </main>
