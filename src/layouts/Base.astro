@@ -139,11 +139,10 @@ main { padding: 0 var(--px) 80px; }
 /* ── CINEMA LIST ── */
 .cinema-province-group { display: flex; flex-direction: column; gap: 12px; }
 .cinema-province-group + .cinema-province-group { margin-top: 2rem; }
-.cinema-province-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; color: var(--text); }
-.cinema-province-label::after { content: ''; height: 2px; width: 28px; background: var(--red); display: inline-block; flex-shrink: 0; }
+.cinema-province-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; color: var(--text); }
 .cinema-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
 .cinema-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-card); padding: 1rem 1.125rem; display: flex; flex-direction: column; }
-.cinema-card-bottom { margin-top: auto; padding-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+.cinema-card-bottom { margin-top: auto; padding-top: 13px; display: flex; flex-direction: column; gap: 7px; align-items: flex-start; }
 .cinema-card-bottom .session-cinema-city { margin-top: 0; }
 .cinema-films-count { font-size: 0.72rem; color: var(--red-light); font-weight: 500; }
 /* ── MODAL ── */
