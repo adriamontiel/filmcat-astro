@@ -80,6 +80,15 @@ for (const film of films) {
 }
 const availableProvinces = PROVINCE_ORDER.filter(p => allProvinces.has(p));
 
+// ── Group cinemas by province (same order as province filter) ──
+const cinemasByProvince = new Map<string, typeof cinemas>();
+for (const province of PROVINCE_ORDER) cinemasByProvince.set(province, []);
+for (const cinema of cinemas) {
+  const province = cityToProvince(cinema.city);
+  cinemasByProvince.get(province)?.push(cinema);
+}
+const cinemaProvinces = PROVINCE_ORDER.filter(p => (cinemasByProvince.get(p)?.length ?? 0) > 0);
+
 // ── Stats ──
 const sessionCount = films.reduce((a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0), 0);
 
@@ -172,9 +181,14 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
       <div class="section-header">
         <h2 class="section-title" id="cinemes-h">Cinemes</h2>
       </div>
-      <div class="cinema-list" id="cinemaList" role="list">
-        {cinemas.map(cinema => <CinemaCard cinema={cinema} />)}
-      </div>
+      {cinemaProvinces.map(province => (
+        <div class="cinema-province-group">
+          <h3 class="cinema-province-label">{province}</h3>
+          <div class="cinema-list" role="list">
+            {cinemasByProvince.get(province)!.map(cinema => <CinemaCard cinema={cinema} />)}
+          </div>
+        </div>
+      ))}
     </section>
 
   </main>

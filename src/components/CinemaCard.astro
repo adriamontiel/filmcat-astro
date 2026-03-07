@@ -1,5 +1,5 @@
 ---
-// CinemaCard.astro — cinema listing card (vertical stack layout)
+// CinemaCard.astro — cinema listing card (vertical stack, bottom-anchored)
 import type { Cinema } from '../lib/types';
 import { sanitizeUrl } from '../lib/sanitize';
 import { CINEMA_URLS } from '../lib/cinema-urls';
@@ -27,13 +27,14 @@ const webUrl    = CINEMA_URLS[cinema.name];
       : <span class="session-cinema-name">{cinema.name}</span>
     }
   </div>
-  <div class="session-cinema-city">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-      <circle cx="12" cy="10" r="3"/>
-    </svg>
-    {cinema.city}
-    <span aria-hidden="true" class="session-city-sep">·</span>
+  <div class="cinema-card-bottom">
+    <div class="session-cinema-city">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      {cinema.city}
+    </div>
     <a
       href={mapsUrl}
       target="_blank"
@@ -41,6 +42,6 @@ const webUrl    = CINEMA_URLS[cinema.name];
       class="session-maps-link"
       aria-label={`Com arribar a ${cinema.name}`}
     >Com arribar</a>
+    <div class="cinema-films-count">▶ {filmCount} en català</div>
   </div>
-  <div class="cinema-films-count">▶ {filmCount} en català</div>
 </article>
