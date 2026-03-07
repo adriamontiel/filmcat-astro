@@ -145,13 +145,14 @@
     lastFocused?.focus();
   }
 
-  function attachCarouselListeners(carousel) {
+  function attachCarouselListeners(carousel, getActiveProvince) {
     if (!carousel) return;
     carousel.addEventListener('click', e => {
-      // Save scroll position when navigating to a film page (cross-browser, incl. Safari)
+      // Save scroll + province filter when navigating to a film page (cross-browser, incl. Safari)
       const link = e.target.closest('a[href^="/films/"]');
       if (link) {
         sessionStorage.setItem('filmcat_scroll', String(window.scrollY));
+        sessionStorage.setItem('filmcat_province', getActiveProvince ? getActiveProvince() : 'all');
         return;
       }
       const card = e.target.closest('[data-film]');
@@ -293,6 +294,19 @@
       });
     }
 
+    // Restore province filter when returning from a film detail page
+    const savedProvince = sessionStorage.getItem('filmcat_province');
+    if (savedProvince && savedProvince !== 'all' && provinceBar) {
+      activeProvince = savedProvince;
+      provinceBar.querySelectorAll('.filter-btn').forEach(b => {
+        const isActive = (b.dataset.provinceFilter || 'all') === savedProvince;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+      syncVersionButtons();
+      applyFilters();
+    }
+
     // Back link → history.back() si hi ha historial, fallback a href="/"
     const backLink = document.getElementById('backLink');
     if (backLink) {
@@ -305,8 +319,8 @@
     }
 
     // Carousels
-    attachCarouselListeners(document.getElementById('mainCarousel'));
-    attachCarouselListeners(document.getElementById('upcomingCarousel'));
+    attachCarouselListeners(document.getElementById('mainCarousel'), () => activeProvince);
+    attachCarouselListeners(document.getElementById('upcomingCarousel'), () => activeProvince);
 
     // Modal close handlers
     document.getElementById('modalBackdrop')?.addEventListener('click', e => {

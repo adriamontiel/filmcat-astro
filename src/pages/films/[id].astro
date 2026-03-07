@@ -9,6 +9,7 @@ import { fetchFilms }    from '../../lib/filmcat';
 import { fetchTMDBPoster } from '../../lib/tmdb';
 import { slugify }       from '../../lib/slug';
 import { CINEMA_URLS }   from '../../lib/cinema-urls';
+import { cityToProvince } from '../../lib/provinces';
 
 const { id } = Astro.params; // slug from URL
 
@@ -199,7 +200,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
               {film.sessions.map(session => {
                 const isSessionVO = ['VO', 'VOSC', 'VOSE'].includes(session.lang);
                 return (
-                  <div class="session-cinema" role="listitem">
+                  <div class="session-cinema" role="listitem" data-province={cityToProvince(session.city)}>
                     <div class="session-cinema-header">
                       <div>
                         <div class="session-cinema-name-row">
@@ -253,4 +254,52 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
 
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" set:html={jsonLdStr}></script>
+
+  <!-- Province-aware session grouping: reorders sessions when a province filter is active -->
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const savedProvince = sessionStorage.getItem('filmcat_province');
+      if (!savedProvince || savedProvince === 'all') return;
+
+      const grid = document.querySelector('.sessions-grid');
+      if (!grid) return;
+
+      const items = [...grid.querySelectorAll(':scope > .session-cinema')];
+      const inProvince = items.filter(el => el.dataset.province === savedProvince);
+      const others     = items.filter(el => el.dataset.province !== savedProvince);
+
+      if (inProvince.length === 0) return;
+
+      // Rebuild with labelled groups
+      grid.innerHTML = '';
+      grid.removeAttribute('role');
+      grid.removeAttribute('aria-label');
+
+      const makeLabel = (text, mod) => {
+        const el = document.createElement('div');
+        el.className = 'session-group-label' + (mod ? ' session-group-label--' + mod : '');
+        el.textContent = text;
+        return el;
+      };
+      const makeList = (label) => {
+        const el = document.createElement('div');
+        el.className = 'sessions-group';
+        el.setAttribute('role', 'list');
+        el.setAttribute('aria-label', label);
+        return el;
+      };
+
+      const provList = makeList(`Sessions a ${savedProvince}`);
+      inProvince.forEach(el => provList.appendChild(el));
+      grid.appendChild(makeLabel(savedProvince));
+      grid.appendChild(provList);
+
+      if (others.length > 0) {
+        const othList = makeList('Altres sessions');
+        others.forEach(el => othList.appendChild(el));
+        grid.appendChild(makeLabel('Altres sessions', 'others'));
+        grid.appendChild(othList);
+      }
+    });
+  </script>
 </Base>
