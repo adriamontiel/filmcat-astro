@@ -227,8 +227,9 @@ footer { position: relative; overflow: hidden; padding: clamp(3rem,8vw,5rem) var
   .footer-bottom { flex-direction: column; align-items: flex-start; }
   .footer-note { text-align: left; }
   .carousel { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  /* Compact filter buttons on mobile — saves ~16px vertical space.
-     38px min-height is above WCAG 2.2 AA target size minimum (24px). */
+  /* Compact filter buttons on mobile with horizontal scroll — no wrapping,
+     saves vertical space. 38px min-height > WCAG 2.2 AA minimum (24px). */
+  .filter-bar { flex-wrap: nowrap; }
   .filter-btn { padding: 0.35rem 0.85rem; font-size: 0.7rem; min-height: 38px; }
   .filter-bar + .filter-bar { margin-top: 6px; }
 }
