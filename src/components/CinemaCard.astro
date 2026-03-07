@@ -42,6 +42,6 @@ const webUrl    = CINEMA_URLS[cinema.name];
       class="session-maps-link"
       aria-label={`Com arribar a ${cinema.name}`}
     >Com arribar</a>
-    <div class="cinema-films-count">▶ {filmCount} en català</div>
+    <div class="cinema-films-count" aria-label={`${filmCount} pel·lícules`}>{filmCount} pel·lícules</div>
   </div>
 </article>
