@@ -135,6 +135,10 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
 
     <!-- ── CARTELLERA ── -->
     <section aria-labelledby="cartellera-h" id="avui" style="padding-top: 32px">
+      <div class="section-header">
+        <h2 class="section-title" id="cartellera-h" style="scroll-margin-top: 80px">En Cartellera</h2>
+      </div>
+
       {availableProvinces.length > 1 && (
         <div class="filter-bar" role="group" aria-label="Filtrar pel·lícules per província" data-filter-type="province">
           <button class="filter-btn active" data-province-filter="all" aria-pressed="true">Totes</button>
@@ -149,10 +153,6 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
         <button class="filter-btn"        data-filter="VD"   aria-pressed="false">Doblada (VD)</button>
         <button class="filter-btn"        data-filter="VO"   aria-pressed="false">Versió Original</button>
         <button class="filter-btn"        data-filter="VOSC" aria-pressed="false">Sub. Català</button>
-      </div>
-
-      <div class="section-header">
-        <h2 class="section-title" id="cartellera-h" style="scroll-margin-top: 80px">En Cartellera</h2>
       </div>
 
       <div class="carousel-wrap">
