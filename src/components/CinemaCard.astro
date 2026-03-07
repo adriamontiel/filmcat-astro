@@ -1,8 +1,9 @@
 ---
-// CinemaCard.astro — cinema listing card with Maps link
-// NOTE: Astro auto-escapes {expr} — sanitize() only needed before set:html.
+// CinemaCard.astro — cinema listing card
+// Consistent with the session card style from the film detail page.
 import type { Cinema } from '../lib/types';
 import { sanitizeUrl } from '../lib/sanitize';
+import { CINEMA_URLS } from '../lib/cinema-urls';
 
 interface Props {
   cinema: Cinema;
@@ -12,33 +13,39 @@ const { cinema } = Astro.props;
 const mapsQuery = encodeURIComponent(`${cinema.name}, ${cinema.address}, ${cinema.city}`);
 const mapsUrl   = sanitizeUrl(`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`);
 const filmCount = cinema.films ?? 0;
+const webUrl    = CINEMA_URLS[cinema.name];
 ---
 <article
   class="cinema-card"
   role="listitem"
-  tabindex="0"
   aria-label={`${cinema.name}, ${cinema.city}, ${filmCount} pel·lícules en català`}
 >
-  <div class="cinema-card-top">
+  <div class="session-cinema-header">
     <div>
-      <div class="cinema-name">{cinema.name}</div>
-      <div class="cinema-location">
+      <div class="session-cinema-name-row">
+        {webUrl
+          ? <a href={webUrl} target="_blank" rel="noopener noreferrer"
+               class="session-cinema-name session-cinema-name-link"
+               aria-label={`Web oficial de ${cinema.name}`}>{cinema.name}</a>
+          : <span class="session-cinema-name">{cinema.name}</span>
+        }
+      </div>
+      <div class="session-cinema-city">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
-        {cinema.address} · {cinema.city}
+        {cinema.city}
+        <span aria-hidden="true" class="session-city-sep">·</span>
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="session-maps-link"
+          aria-label={`Com arribar a ${cinema.name}`}
+        >Com arribar</a>
       </div>
-      <div class="cinema-films-count">▶ {filmCount} pel·lícules en català</div>
     </div>
-    <a
-      href={mapsUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="maps-btn"
-      aria-label={`Obrir ${cinema.name} a Google Maps`}
-    >
-      Veure
-    </a>
+    <span class="cinema-films-count" aria-hidden="true">{filmCount} en català</span>
   </div>
 </article>

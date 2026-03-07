@@ -138,17 +138,8 @@ main { padding: 0 var(--px) 80px; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 /* ── CINEMA LIST ── */
 .cinema-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
-.cinema-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-card); padding: 1rem 1.125rem; cursor: pointer; transition: border-color .2s, transform .2s; position: relative; overflow: hidden; }
-.cinema-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--red); transform: scaleY(0); transition: transform .2s; }
-.cinema-card:hover { border-color: rgba(192,57,43,.4); transform: translateX(4px); }
-.cinema-card:hover::before { transform: scaleY(1); }
-.cinema-card:focus-visible { outline: none; border-color: var(--red-focus); box-shadow: 0 0 0 3px var(--red-focus); }
-.cinema-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.cinema-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
-.maps-btn { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; background: rgba(192,57,43,.12); border: 1.5px solid rgba(192,57,43,.25); color: var(--red-light); padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; letter-spacing: .5px; text-decoration: none; transition: background .18s, border-color .18s, transform .15s; min-height: 44px; }
-.maps-btn:hover { background: rgba(192,57,43,.28); border-color: var(--red); color: var(--text); transform: translateY(-1px); }
-.cinema-location { font-size: 0.75rem; color: var(--muted); display: flex; align-items: flex-start; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
-.cinema-films-count { font-size: 0.75rem; color: var(--red-light); font-weight: 500; }
+.cinema-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-card); padding: 1rem 1.125rem; }
+.cinema-films-count { font-size: 0.75rem; color: var(--red-light); font-weight: 500; flex-shrink: 0; }
 /* ── MODAL ── */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity .25s; backdrop-filter: blur(14px); }
 .modal-backdrop.open { opacity: 1; pointer-events: all; }
