@@ -6,10 +6,43 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "eslint src public/js",
+    "lint:fix": "eslint src public/js --fix",
+    "format": "prettier --write src public/js",
+    "format:check": "prettier --check src public/js",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "lint-staged": {
+    "*.{ts,mts,astro}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,mjs}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@astrojs/vercel": "^9.0.4",
-    "astro": "^5.18.0"
+    "astro": "^5.18.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.58.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.3",
+    "eslint-plugin-astro": "^1.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
+    "prettier": "^3.8.1",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
   }
 }

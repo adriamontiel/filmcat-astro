@@ -1,39 +1,111 @@
+// tmdb.ts — server-side TMDB poster fetch with in-process cache.
+//
+// WHY A CACHE?
+// Each page request previously called TMDB once per film (~10-20 calls),
+// adding 3-8 s of latency. With the cache:
+//   • Warm serverless instance: cache hit → 0 TMDB calls → ~200 ms page load
+//   • Cold start: cache miss → TMDB calls → results stored for next request
+//
+// The Vercel cron job (/api/refresh-cache) pre-warms the cache every Thursday
+// so that the first real visitor after a weekly content update still gets a fast
+// response. TTL is 8 hours (well within the 7-day s-maxage CDN cache).
+
 const TMDB_KEY = import.meta.env.TMDB_KEY;
-const PATH_RE  = /^\/[a-zA-Z0-9_\-]+\.(jpg|png|webp)$/;
+const PATH_RE = /^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/;
 
 export interface TMDBResult {
-  posterPath:   string | null;
+  posterPath: string | null;
   backdropPath: string | null;
-  tmdbId:       number;
+  tmdbId: number;
 }
 
+// ── In-process cache ─────────────────────────────────────────────────────────
+// Key: `${searchTitle}__${year}`
+// Value: { result, expiresAt }
+// Note: this cache lives in the Node.js module scope — it persists across
+// requests within the same serverless function instance (Vercel reuses warm
+// instances for subsequent requests). Cross-instance persistence requires
+// Vercel KV, which can be added later without changing this interface.
+
+const TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+interface CacheEntry {
+  result: TMDBResult | null;
+  expiresAt: number;
+}
+
+const _cache = new Map<string, CacheEntry>();
+
+function cacheKey(title: string, year: number): string {
+  return `${title.toLowerCase()}__${year}`;
+}
+
+export function getCachedPoster(title: string, year: number): TMDBResult | null | undefined {
+  const entry = _cache.get(cacheKey(title, year));
+  if (!entry) return undefined; // miss
+  if (Date.now() > entry.expiresAt) {
+    // expired
+    _cache.delete(cacheKey(title, year));
+    return undefined;
+  }
+  return entry.result; // hit (may be null = "not found")
+}
+
+export function setCachedPoster(title: string, year: number, result: TMDBResult | null): void {
+  _cache.set(cacheKey(title, year), { result, expiresAt: Date.now() + TTL_MS });
+}
+
+/** Returns current cache size — used by the /api/refresh-cache health endpoint */
+export function getCacheSize(): number {
+  return _cache.size;
+}
+
+// ── Fetch with cache ─────────────────────────────────────────────────────────
 export async function fetchTMDBPoster(
   searchTitle: string,
-  year: number,
+  year: number
 ): Promise<TMDBResult | null> {
   if (!TMDB_KEY) return null;
+
+  // 1. Cache hit
+  const cached = getCachedPoster(searchTitle, year);
+  if (cached !== undefined) return cached;
+
+  // 2. Cache miss → call TMDB
   try {
     const r = await fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&include_adult=false`,
-      { signal: AbortSignal.timeout(6000) },
+      { signal: AbortSignal.timeout(6000) }
     );
-    if (!r.ok) return null;
+    if (!r.ok) {
+      setCachedPoster(searchTitle, year, null);
+      return null;
+    }
     const data = await r.json();
 
-    const match = (data.results as Array<Record<string, unknown>>)?.find(m => {
+    const match = (data.results as Array<Record<string, unknown>>)?.find((m) => {
       if (!m.release_date) return false;
       const resultYear = parseInt((m.release_date as string).slice(0, 4));
       return Math.abs(resultYear - year) <= 1 && m.poster_path;
     });
 
-    if (!match) return null;
+    if (!match) {
+      setCachedPoster(searchTitle, year, null);
+      return null;
+    }
 
-    return {
-      posterPath:   PATH_RE.test(match.poster_path as string) ? (match.poster_path as string) : null,
-      backdropPath: PATH_RE.test(match.backdrop_path as string) ? (match.backdrop_path as string) : null,
-      tmdbId:       match.id as number,
+    const result: TMDBResult = {
+      posterPath: PATH_RE.test(match.poster_path as string) ? (match.poster_path as string) : null,
+      backdropPath: PATH_RE.test(match.backdrop_path as string)
+        ? (match.backdrop_path as string)
+        : null,
+      tmdbId: match.id as number,
     };
+
+    setCachedPoster(searchTitle, year, result);
+    return result;
   } catch {
+    setCachedPoster(searchTitle, year, null);
     return null;
   }
 }

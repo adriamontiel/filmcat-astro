@@ -27,7 +27,12 @@
 
   function posterPlaceholder(film) {
     const abbr = film.title
-      .split(' ').filter(w => w.length > 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+      .split(' ')
+      .filter((w) => w.length > 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 3);
     const re = /^#[0-9a-fA-F]{3,6}$/;
     const c1 = re.test(film.color1) ? film.color1 : '#111';
     const c2 = re.test(film.color2) ? film.color2 : '#222';
@@ -43,7 +48,7 @@
 
     const titleEl = document.getElementById('modalTitle');
     const synopsisEl = document.getElementById('modalSynopsis');
-    if (titleEl)    titleEl.textContent    = film.title    || '';
+    if (titleEl) titleEl.textContent = film.title || '';
     if (synopsisEl) synopsisEl.textContent = film.synopsis || '';
 
     const pi = document.getElementById('modalPosterImg');
@@ -75,25 +80,32 @@
     if (tagsEl) {
       tagsEl.innerHTML = [film.version, film.genre, film.duration, String(film.year)]
         .filter(Boolean)
-        .map(t => `<span class="tag">${sanitize(t)}</span>`)
+        .map((t) => `<span class="tag">${sanitize(t)}</span>`)
         .join('');
     }
 
     const sg = document.getElementById('modalSessions');
     if (sg) {
       if (!film.sessions?.length) {
-        sg.innerHTML = '<p class="status-msg" role="status">Properament — Sessions pendent de confirmar</p>';
+        sg.innerHTML =
+          '<p class="status-msg" role="status">Properament — Sessions pendent de confirmar</p>';
       } else {
-        sg.innerHTML = film.sessions.map(s => {
-          const isVO = ['VO', 'VOSC', 'VOSE'].includes(s.lang);
-          const mapsQ = encodeURIComponent(`${s.cinema}, ${s.city}`);
-          const mapsLink = sanitizeUrl(`https://www.google.com/maps/search/?api=1&query=${mapsQ}`);
-          const times = (s.times || []).map(t =>
-            `<button class="session-time" aria-label="${sanitize(t)} a ${sanitize(s.cinema)}, versió ${sanitize(s.lang)}">
+        sg.innerHTML = film.sessions
+          .map((s) => {
+            const isVO = ['VO', 'VOSC', 'VOSE'].includes(s.lang);
+            const mapsQ = encodeURIComponent(`${s.cinema}, ${s.city}`);
+            const mapsLink = sanitizeUrl(
+              `https://www.google.com/maps/search/?api=1&query=${mapsQ}`
+            );
+            const times = (s.times || [])
+              .map(
+                (t) =>
+                  `<button class="session-time" aria-label="${sanitize(t)} a ${sanitize(s.cinema)}, versió ${sanitize(s.lang)}">
               ${sanitize(t)} <span class="session-time-lang" aria-hidden="true">${sanitize(s.lang)}</span>
             </button>`
-          ).join('');
-          return `<div class="session-cinema" role="listitem">
+              )
+              .join('');
+            return `<div class="session-cinema" role="listitem">
             <div class="session-cinema-header">
               <div>
                 <div class="session-cinema-name-row">
@@ -107,7 +119,8 @@
             </div>
             <div class="session-times" role="group" aria-label="Horaris a ${sanitize(s.cinema)}">${times}</div>
           </div>`;
-        }).join('');
+          })
+          .join('');
       }
     }
 
@@ -147,7 +160,7 @@
 
   function attachCarouselListeners(carousel, getActiveProvince) {
     if (!carousel) return;
-    carousel.addEventListener('click', e => {
+    carousel.addEventListener('click', (e) => {
       // Save scroll + province filter when navigating to a film page (cross-browser, incl. Safari)
       const link = e.target.closest('a[href^="/films/"]');
       if (link) {
@@ -157,14 +170,18 @@
       }
       const card = e.target.closest('[data-film]');
       if (!card || card.tagName === 'A') return;
-      try { openModal(JSON.parse(card.dataset.film)); } catch (_) {}
+      try {
+        openModal(JSON.parse(card.dataset.film));
+      } catch (_) {}
     });
-    carousel.addEventListener('keydown', e => {
+    carousel.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const card = e.target.closest('[data-film]');
       if (!card || card.tagName === 'A') return;
       e.preventDefault();
-      try { openModal(JSON.parse(card.dataset.film)); } catch (_) {}
+      try {
+        openModal(JSON.parse(card.dataset.film));
+      } catch (_) {}
     });
   }
 
@@ -188,7 +205,7 @@
         mobileNav.classList.toggle('open', !expanded);
         document.body.style.overflow = expanded ? '' : 'hidden';
       });
-      mobileNav.querySelectorAll('a').forEach(a => {
+      mobileNav.querySelectorAll('a').forEach((a) => {
         a.addEventListener('click', () => {
           hamburger.setAttribute('aria-expanded', 'false');
           mobileNav.setAttribute('aria-hidden', 'true');
@@ -200,18 +217,38 @@
 
     // ── FILTERS (province × version) ──
     let activeProvince = 'all';
-    let activeVersion  = 'all';
+    let activeVersion = 'all';
 
-    function applyFilters() {
+    function applyFilters(animate = true) {
       const cards = document.querySelectorAll('#mainCarousel .card');
       let visible = 0;
-      cards.forEach(card => {
-        const provinces  = (card.dataset.province || '').split(' ');
+      cards.forEach((card) => {
+        const provinces = (card.dataset.province || '').split(' ');
         const provinceOk = activeProvince === 'all' || provinces.includes(activeProvince);
-        const versionOk  = activeVersion  === 'all' || card.dataset.version === activeVersion;
+        const versionOk = activeVersion === 'all' || card.dataset.version === activeVersion;
         const show = provinceOk && versionOk;
-        card.style.display = show ? '' : 'none';
-        if (show) visible++;
+        if (show) {
+          if (card.style.display === 'none') {
+            card.style.display = '';
+            if (animate) void card.offsetWidth; // force reflow for transition
+          }
+          card.style.opacity = '1';
+          visible++;
+        } else {
+          if (!animate) {
+            card.style.opacity = '0';
+            card.style.display = 'none';
+          } else {
+            card.style.opacity = '0';
+            card.addEventListener(
+              'transitionend',
+              () => {
+                if (card.style.opacity === '0') card.style.display = 'none';
+              },
+              { once: true }
+            );
+          }
+        }
       });
       let msg = document.getElementById('filterEmptyMsg');
       if (!visible) {
@@ -235,7 +272,7 @@
       if (!versionBar) return;
 
       const available = new Set(['all']);
-      document.querySelectorAll('#mainCarousel .card').forEach(card => {
+      document.querySelectorAll('#mainCarousel .card').forEach((card) => {
         const provinces = (card.dataset.province || '').split(' ');
         if (activeProvince === 'all' || provinces.includes(activeProvince)) {
           available.add(card.dataset.version || '');
@@ -243,7 +280,7 @@
       });
 
       let mustReset = false;
-      versionBar.querySelectorAll('.filter-btn').forEach(btn => {
+      versionBar.querySelectorAll('.filter-btn').forEach((btn) => {
         const f = btn.dataset.filter || 'all';
         if (available.has(f)) {
           btn.removeAttribute('aria-disabled');
@@ -255,7 +292,7 @@
 
       if (mustReset) {
         activeVersion = 'all';
-        versionBar.querySelectorAll('.filter-btn').forEach(b => {
+        versionBar.querySelectorAll('.filter-btn').forEach((b) => {
           const isAll = (b.dataset.filter || 'all') === 'all';
           b.classList.toggle('active', isAll);
           b.setAttribute('aria-pressed', isAll ? 'true' : 'false');
@@ -266,11 +303,11 @@
     // Province filter bar
     const provinceBar = document.querySelector('.filter-bar[data-filter-type="province"]');
     if (provinceBar) {
-      provinceBar.addEventListener('click', e => {
+      provinceBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
         activeProvince = btn.dataset.provinceFilter || 'all';
-        provinceBar.querySelectorAll('.filter-btn').forEach(b => {
+        provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
           b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
@@ -282,11 +319,11 @@
     // Version filter bar
     const versionBar = document.querySelector('.filter-bar[data-filter-type="version"]');
     if (versionBar) {
-      versionBar.addEventListener('click', e => {
+      versionBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
         activeVersion = btn.dataset.filter || 'all';
-        versionBar.querySelectorAll('.filter-btn').forEach(b => {
+        versionBar.querySelectorAll('.filter-btn').forEach((b) => {
           b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
@@ -298,19 +335,19 @@
     const savedProvince = sessionStorage.getItem('filmcat_province');
     if (savedProvince && savedProvince !== 'all' && provinceBar) {
       activeProvince = savedProvince;
-      provinceBar.querySelectorAll('.filter-btn').forEach(b => {
+      provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
         const isActive = (b.dataset.provinceFilter || 'all') === savedProvince;
         b.classList.toggle('active', isActive);
         b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
       syncVersionButtons();
-      applyFilters();
+      applyFilters(false); // instant restore, no animation
     }
 
     // Back link → history.back() si hi ha historial, fallback a href="/"
     const backLink = document.getElementById('backLink');
     if (backLink) {
-      backLink.addEventListener('click', e => {
+      backLink.addEventListener('click', (e) => {
         if (history.length > 1) {
           e.preventDefault();
           history.back();
@@ -319,18 +356,36 @@
     }
 
     // Cinema province filter (independent from the film filters)
-    const cinemaProvinceBar = document.querySelector('.filter-bar[data-filter-type="cinema-province"]');
+    const cinemaProvinceBar = document.querySelector(
+      '.filter-bar[data-filter-type="cinema-province"]'
+    );
     if (cinemaProvinceBar) {
-      cinemaProvinceBar.addEventListener('click', e => {
+      cinemaProvinceBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn) return;
         const selected = btn.dataset.cinemaProvinceFilter || 'all';
-        cinemaProvinceBar.querySelectorAll('.filter-btn').forEach(b => {
+        cinemaProvinceBar.querySelectorAll('.filter-btn').forEach((b) => {
           b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
-        document.querySelectorAll('[data-cinema-province]').forEach(card => {
-          card.hidden = selected !== 'all' && card.dataset.cinemaProvince !== selected;
+        document.querySelectorAll('[data-cinema-province]').forEach((card) => {
+          const show = selected === 'all' || card.dataset.cinemaProvince === selected;
+          if (show) {
+            if (card.hidden) {
+              card.hidden = false;
+              void card.offsetWidth; // force reflow
+            }
+            card.style.opacity = '1';
+          } else {
+            card.style.opacity = '0';
+            card.addEventListener(
+              'transitionend',
+              () => {
+                if (card.style.opacity === '0') card.hidden = true;
+              },
+              { once: true }
+            );
+          }
         });
       });
     }
@@ -340,27 +395,36 @@
     attachCarouselListeners(document.getElementById('upcomingCarousel'), () => activeProvince);
 
     // Modal close handlers
-    document.getElementById('modalBackdrop')?.addEventListener('click', e => {
+    document.getElementById('modalBackdrop')?.addEventListener('click', (e) => {
       if (e.target === document.getElementById('modalBackdrop')) closeModal();
     });
     document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
 
     // Trap focus inside modal + Escape key
-    document.getElementById('modal')?.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closeModal(); return; }
+    document.getElementById('modal')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        return;
+      }
       if (e.key !== 'Tab') return;
       const modal = document.getElementById('modal');
       const focusable = [...modal.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])')];
-      const first = focusable[0], last = focusable[focusable.length - 1];
+      const first = focusable[0],
+        last = focusable[focusable.length - 1];
       if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
       } else {
-        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
       }
     });
   }
 
   // astro:page-load fires on first load AND on every View Transitions navigation
   document.addEventListener('astro:page-load', init);
-
 })();

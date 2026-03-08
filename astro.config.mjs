@@ -7,4 +7,9 @@ export default defineConfig({
   output: 'server',
   adapter: vercel(),
   site: 'https://filmcat.cat',
+
+  // Allow Astro's <Image> to optimise remote TMDB posters (→ WebP, correct sizing)
+  image: {
+    domains: ['image.tmdb.org'],
+  },
 });

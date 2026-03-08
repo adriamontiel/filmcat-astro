@@ -1,6 +1,7 @@
 ---
 // FilmCard.astro — film card linking to /films/[slug]
 // data-film kept for JS modal fallback; data-version for filter bar
+import { Image } from 'astro:assets';
 import type { Film } from '../lib/types';
 import { TMDB_IMG } from '../lib/tmdb';
 import { slugify } from '../lib/slug';
@@ -12,24 +13,30 @@ interface Props {
 const { film } = Astro.props;
 
 const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
-const isUpcoming   = film.sessions.length === 0;
-const slug         = slugify(film.title);
-const href         = `/films/${slug}`;
+const isUpcoming = film.sessions.length === 0;
+const slug = slugify(film.title);
+const href = `/films/${slug}`;
 
 // Poster URL (server-side resolved)
 const posterSrc = film.posterPath ? `${TMDB_IMG}${film.posterPath}` : null;
 
 // Abbreviation for placeholder
 const abbr = film.title
-  .split(' ').filter(w => w.length > 2).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+  .split(' ')
+  .filter((w) => w.length > 2)
+  .map((w) => w[0])
+  .join('')
+  .toUpperCase()
+  .slice(0, 3);
 
-const isVO      = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const genreFirst = film.genre ? film.genre.split(' · ')[0] : '';
 
 // Space-separated list of provinces where this film is showing (for province filter)
-const filmProvinces = film.sessions.length > 0
-  ? [...new Set(film.sessions.map(s => cityToProvince(s.city)))].join(' ')
-  : 'Barcelona';
+const filmProvinces =
+  film.sessions.length > 0
+    ? [...new Set(film.sessions.map((s) => cityToProvince(s.city)))].join(' ')
+    : 'Barcelona';
 
 // Validate colors — only hex values allowed
 const colorRe = /^#[0-9a-fA-F]{3,6}$/;
@@ -38,24 +45,25 @@ const c2 = colorRe.test(film.color2) ? film.color2 : '#222';
 
 // Serialize film data for JS modal (quick-view fallback when JS intercepts click)
 const filmJson = JSON.stringify({
-  id:           film.id,
-  title:        film.title,
+  id: film.id,
+  title: film.title,
   titleOriginal: film.titleOriginal,
-  director:     film.director,
-  synopsis:     film.synopsis,
-  version:      film.version,
-  year:         film.year,
-  genre:        film.genre,
-  duration:     film.duration,
-  color1:       film.color1,
-  color2:       film.color2,
-  posterPath:   film.posterPath,
+  director: film.director,
+  synopsis: film.synopsis,
+  version: film.version,
+  year: film.year,
+  genre: film.genre,
+  duration: film.duration,
+  color1: film.color1,
+  color2: film.color2,
+  posterPath: film.posterPath,
   backdropPath: film.backdropPath,
-  _tmdbId:      film._tmdbId ?? null,
-  _trailerKey:  film._trailerKey ?? null,
-  sessions:     film.sessions,
+  _tmdbId: film._tmdbId ?? null,
+  _trailerKey: film._trailerKey ?? null,
+  sessions: film.sessions,
 });
 ---
+
 <a
   class="card"
   href={href}
@@ -66,28 +74,32 @@ const filmJson = JSON.stringify({
   aria-label={`${film.title} (${film.year}), versió ${film.version}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
 >
   <div class="card-img-wrap">
-    {posterSrc ? (
-      <img
-        src={posterSrc}
-        alt={`Pòster oficial de ${film.title}`}
-        loading="lazy"
-        decoding="async"
-        width="215"
-        height="322"
-      />
-    ) : (
-      <div
-        class="poster-placeholder"
-        style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
-        aria-hidden="true"
-      >
-        <svg viewBox="0 0 100 88" width="38" style="opacity:.25">
-          <polygon points="50,0 100,88 0,88" fill="white"/>
-        </svg>
-        <div class="abbr">{abbr}</div>
-        <div class="pp-title">{film.title}</div>
-      </div>
-    )}
+    {
+      posterSrc ? (
+        <Image
+          src={posterSrc}
+          alt={`Pòster oficial de ${film.title}`}
+          width={215}
+          height={322}
+          format="webp"
+          quality={82}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <div
+          class="poster-placeholder"
+          style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 100 88" width="38" style="opacity:.25">
+            <polygon points="50,0 100,88 0,88" fill="white" />
+          </svg>
+          <div class="abbr">{abbr}</div>
+          <div class="pp-title">{film.title}</div>
+        </div>
+      )
+    }
     <div class="card-overlay" aria-hidden="true">
       <div class="card-overlay-title">{film.title}</div>
       <div class="card-overlay-sessions">
