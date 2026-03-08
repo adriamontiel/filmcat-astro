@@ -13,10 +13,14 @@ import { slugify } from '../lib/slug';
 import { cityToProvince, PROVINCE_ORDER } from '../lib/provinces';
 
 // ── Fetch all data in parallel ──
-const [{ films, comingSoon, isOffline }, cinemasFromApi] = await Promise.all([
-  fetchFilms(),
-  fetchCinemas(),
-]);
+const [{ films: rawFilms, comingSoon: rawComingSoon, isOffline }, cinemasFromApi] =
+  await Promise.all([fetchFilms(), fetchCinemas()]);
+
+// ── Films from the "cartellera" API list that have no sessions confirmed yet
+// are semantically "coming soon" — move them to the upcoming section so they
+// don't clutter the main grid with "Pròximament" placeholders.
+const films = rawFilms.filter((f) => f.sessions.length > 0);
+const comingSoon = [...rawFilms.filter((f) => f.sessions.length === 0), ...rawComingSoon];
 
 // ── TMDB posters (server-side, API key stays private) ──
 await Promise.allSettled(
