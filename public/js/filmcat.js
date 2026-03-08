@@ -244,6 +244,11 @@
         const versionOk = activeVersion === 'all' || card.dataset.version === activeVersion;
         const show = provinceOk && versionOk;
         if (show) {
+          // Cancel any pending hide listener before showing
+          if (card._pendingHide) {
+            card.removeEventListener('transitionend', card._pendingHide);
+            card._pendingHide = null;
+          }
           if (card.style.display === 'none') {
             card.style.display = '';
             if (animate) void card.offsetWidth; // force reflow for transition
@@ -256,14 +261,19 @@
             card.style.display = 'none';
           } else {
             card.style.opacity = '0';
-            card.addEventListener(
-              'transitionend',
-              (e) => {
-                if (e.propertyName === 'opacity' && card.style.opacity === '0')
-                  card.style.display = 'none';
-              },
-              { once: true }
-            );
+            // Named function (no once:true) so non-opacity transitionend events
+            // (e.g. transform from hover at 0.3s) don't consume and discard the
+            // listener before opacity (0.15s) has a chance to fire.
+            if (card._pendingHide) {
+              card.removeEventListener('transitionend', card._pendingHide);
+            }
+            card._pendingHide = (e) => {
+              if (e.propertyName !== 'opacity') return;
+              card.style.display = 'none';
+              card.removeEventListener('transitionend', card._pendingHide);
+              card._pendingHide = null;
+            };
+            card.addEventListener('transitionend', card._pendingHide);
           }
         }
       });
