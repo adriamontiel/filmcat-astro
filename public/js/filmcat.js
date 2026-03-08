@@ -244,37 +244,20 @@
         const versionOk = activeVersion === 'all' || card.dataset.version === activeVersion;
         const show = provinceOk && versionOk;
         if (show) {
-          // Cancel any pending hide listener before showing
-          if (card._pendingHide) {
-            card.removeEventListener('transitionend', card._pendingHide);
-            card._pendingHide = null;
-          }
           if (card.style.display === 'none') {
             card.style.display = '';
-            if (animate) void card.offsetWidth; // force reflow for transition
+            if (animate) void card.offsetWidth; // force reflow so fade-in transition plays
           }
           card.style.opacity = '1';
           visible++;
         } else {
-          if (!animate) {
-            card.style.opacity = '0';
-            card.style.display = 'none';
-          } else {
-            card.style.opacity = '0';
-            // Named function (no once:true) so non-opacity transitionend events
-            // (e.g. transform from hover at 0.3s) don't consume and discard the
-            // listener before opacity (0.15s) has a chance to fire.
-            if (card._pendingHide) {
-              card.removeEventListener('transitionend', card._pendingHide);
-            }
-            card._pendingHide = (e) => {
-              if (e.propertyName !== 'opacity') return;
-              card.style.display = 'none';
-              card.removeEventListener('transitionend', card._pendingHide);
-              card._pendingHide = null;
-            };
-            card.addEventListener('transitionend', card._pendingHide);
-          }
+          // Always hide instantly — no fade-out animation.
+          // Relying on transitionend to set display:none is fragile because
+          // other CSS transitions on the card (hover transform, img scale)
+          // can interfere. Instant hide is reliable and the correct UX:
+          // filter results should appear immediately on click.
+          card.style.opacity = '0';
+          card.style.display = 'none';
         }
       });
       let msg = document.getElementById('filterEmptyMsg');
