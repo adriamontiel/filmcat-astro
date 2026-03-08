@@ -1,5 +1,6 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
+import { Analytics } from '@vercel/analytics/astro';
 
 interface Props {
   title?: string;
@@ -1414,5 +1415,6 @@ const {
     <a href="#main-content" class="skip-link">Saltar al contingut principal</a>
     <slot />
     <script src="/js/filmcat.js" defer></script>
+    <Analytics />
   </body>
 </html>
