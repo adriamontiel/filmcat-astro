@@ -185,6 +185,10 @@
     });
   }
 
+  // ── FILTER STATE — module-level so it survives astro:page-load re-inits ──
+  let activeProvince = 'all';
+  let activeVersion = 'all';
+
   // ── INIT — runs on every page load, including View Transitions navigations ──
   function init() {
     // Restore scroll position when returning to home page (cross-browser, incl. Safari)
@@ -229,8 +233,7 @@
     }
 
     // ── FILTERS (province × version) ──
-    let activeProvince = 'all';
-    let activeVersion = 'all';
+    // State lives at module level — don't re-declare here.
 
     function applyFilters(animate = true) {
       const cards = document.querySelectorAll('#mainCarousel .card');
@@ -313,9 +316,24 @@
       }
     }
 
+    // Restore province from sessionStorage if returning from a film detail page,
+    // then clear it immediately so stale state never leaks into future re-inits.
+    const savedProvince = sessionStorage.getItem('filmcat_province');
+    if (savedProvince !== null) {
+      sessionStorage.removeItem('filmcat_province');
+      activeProvince = savedProvince; // may be 'all' — that's correct too
+    }
+
     // Province filter bar
     const provinceBar = document.querySelector('.filter-bar[data-filter-type="province"]');
     if (provinceBar) {
+      // Re-sync button UI with current module-level state
+      // (Astro replaces the DOM on every navigation, resetting button classes)
+      provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
+        const isActive = (b.dataset.provinceFilter || 'all') === activeProvince;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
       provinceBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
@@ -332,6 +350,12 @@
     // Version filter bar
     const versionBar = document.querySelector('.filter-bar[data-filter-type="version"]');
     if (versionBar) {
+      // Re-sync button UI with current module-level state
+      versionBar.querySelectorAll('.filter-btn').forEach((b) => {
+        const isActive = (b.dataset.filter || 'all') === activeVersion;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
       versionBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
@@ -344,18 +368,9 @@
       });
     }
 
-    // Restore province filter when returning from a film detail page
-    const savedProvince = sessionStorage.getItem('filmcat_province');
-    if (savedProvince && savedProvince !== 'all' && provinceBar) {
-      activeProvince = savedProvince;
-      provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
-        const isActive = (b.dataset.provinceFilter || 'all') === savedProvince;
-        b.classList.toggle('active', isActive);
-        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-      syncVersionButtons();
-      applyFilters(false); // instant restore, no animation
-    }
+    // Apply persisted filter state to the freshly-swapped DOM (no animation)
+    syncVersionButtons();
+    if (activeProvince !== 'all' || activeVersion !== 'all') applyFilters(false);
 
     // Back link → history.back() si hi ha historial, fallback a href="/"
     const backLink = document.getElementById('backLink');
