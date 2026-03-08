@@ -188,10 +188,13 @@
   // ── INIT — runs on every page load, including View Transitions navigations ──
   function init() {
     // Restore scroll position when returning to home page (cross-browser, incl. Safari)
+    // Skip if the URL has a hash — the browser/anchor scroll takes priority.
     const savedScroll = sessionStorage.getItem('filmcat_scroll');
-    if (savedScroll !== null && document.getElementById('mainCarousel')) {
-      sessionStorage.removeItem('filmcat_scroll');
-      requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll, 10)));
+    if (savedScroll !== null) {
+      sessionStorage.removeItem('filmcat_scroll'); // always clear to avoid stale state
+      if (document.getElementById('mainCarousel') && !window.location.hash) {
+        requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll, 10)));
+      }
     }
 
     // Mobile nav
@@ -206,11 +209,21 @@
         document.body.style.overflow = expanded ? '' : 'hidden';
       });
       mobileNav.querySelectorAll('a').forEach((a) => {
-        a.addEventListener('click', () => {
+        a.addEventListener('click', (e) => {
           hamburger.setAttribute('aria-expanded', 'false');
           mobileNav.setAttribute('aria-hidden', 'true');
           mobileNav.classList.remove('open');
           document.body.style.overflow = '';
+
+          // Explicit hash scroll: needed when Astro intercepts /#hash links
+          // and doesn't auto-scroll (e.g. /#cinemes from the homepage).
+          const href = a.getAttribute('href') || '';
+          const hashIdx = href.indexOf('#');
+          if (hashIdx !== -1 && window.location.pathname === '/') {
+            e.preventDefault();
+            const target = document.getElementById(href.slice(hashIdx + 1));
+            if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth' }));
+          }
         });
       });
     }
