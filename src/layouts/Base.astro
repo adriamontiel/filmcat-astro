@@ -44,6 +44,7 @@ const {
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     <title>{title}</title>
     {canonical && <link rel="canonical" href={canonical} />}
+    <Analytics />
     <ViewTransitions />
     <style is:global>
       /* ── SELF-HOSTED FONTS ── */
@@ -1417,6 +1418,5 @@ const {
     <a href="#main-content" class="skip-link">Saltar al contingut principal</a>
     <slot />
     <script src="/js/filmcat.js" defer></script>
-    <Analytics />
   </body>
 </html>
