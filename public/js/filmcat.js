@@ -258,8 +258,9 @@
             card.style.opacity = '0';
             card.addEventListener(
               'transitionend',
-              () => {
-                if (card.style.opacity === '0') card.style.display = 'none';
+              (e) => {
+                if (e.propertyName === 'opacity' && card.style.opacity === '0')
+                  card.style.display = 'none';
               },
               { once: true }
             );
