@@ -304,7 +304,6 @@
         activeVersion = 'all';
         versionBar.querySelectorAll('.filter-btn').forEach((b) => {
           const isAll = (b.dataset.filter || 'all') === 'all';
-          b.classList.toggle('active', isAll);
           b.setAttribute('aria-pressed', isAll ? 'true' : 'false');
         });
       }
@@ -325,7 +324,6 @@
       // (Astro replaces the DOM on every navigation, resetting button classes)
       provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
         const isActive = (b.dataset.provinceFilter || 'all') === activeProvince;
-        b.classList.toggle('active', isActive);
         b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
       provinceBar.addEventListener('click', (e) => {
@@ -333,7 +331,6 @@
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
         activeProvince = btn.dataset.provinceFilter || 'all';
         provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
         syncVersionButtons();
@@ -347,7 +344,6 @@
       // Re-sync button UI with current module-level state
       versionBar.querySelectorAll('.filter-btn').forEach((b) => {
         const isActive = (b.dataset.filter || 'all') === activeVersion;
-        b.classList.toggle('active', isActive);
         b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
       versionBar.addEventListener('click', (e) => {
@@ -355,7 +351,6 @@
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
         activeVersion = btn.dataset.filter || 'all';
         versionBar.querySelectorAll('.filter-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
         applyFilters();
@@ -387,7 +382,6 @@
         if (!btn) return;
         const selected = btn.dataset.cinemaProvinceFilter || 'all';
         cinemaProvinceBar.querySelectorAll('.filter-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
         document.querySelectorAll('[data-cinema-province]').forEach((card) => {

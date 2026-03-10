@@ -179,7 +179,7 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
             aria-label="Filtrar pel·lícules per província"
             data-filter-type="province"
           >
-            <button class="filter-btn active" data-province-filter="all" aria-pressed="true">
+            <button class="filter-btn" data-province-filter="all" aria-pressed="true">
               Totes
             </button>
             {availableProvinces.map((province) => (
@@ -197,7 +197,7 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
         aria-label="Filtrar pel·lícules per versió"
         data-filter-type="version"
       >
-        <button class="filter-btn active" data-filter="all" aria-pressed="true">Totes</button>
+        <button class="filter-btn" data-filter="all" aria-pressed="true">Totes</button>
         <button class="filter-btn" data-filter="VD" aria-pressed="false">Versió Doblada (VD)</button
         >
         <button class="filter-btn" data-filter="VO" aria-pressed="false"
@@ -253,7 +253,7 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
             aria-label="Filtrar cinemes per província"
             data-filter-type="cinema-province"
           >
-            <button class="filter-btn active" data-cinema-province-filter="all" aria-pressed="true">
+            <button class="filter-btn" data-cinema-province-filter="all" aria-pressed="true">
               Tots
             </button>
             {cinemaProvinces.map((province) => (
