@@ -206,7 +206,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
               )
             }
             <div class="film-tags">
-              <span class={`badge${isVO ? ' vo' : ''}`}>{film.version}</span>
+              <span class={`badge${isVO ? ' vo' : ''}`}>
+                <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
+              </span>
               {film.genre && <span class="tag">{film.genre.split(' · ')[0]}</span>}
               {film.year && <span class="tag">{film.year}</span>}
               {film.director && <span class="tag">{film.director}</span>}
@@ -335,7 +337,11 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                             </a>
                           </div>
                         </div>
-                        <span class={`badge${isSessionVO ? ' vo' : ''}`}>{session.lang}</span>
+                        <span class={`badge${isSessionVO ? ' vo' : ''}`}>
+                          <abbr title={versionLabel[session.lang] ?? session.lang}>
+                            {session.lang}
+                          </abbr>
+                        </span>
                       </div>
                       <div
                         class="session-times"

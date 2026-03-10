@@ -29,6 +29,13 @@ const abbr = film.title
   .slice(0, 3);
 
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+
+const VERSION_LABELS: Record<string, string> = {
+  VD: 'Versió Doblada',
+  VO: 'Versió Original',
+  VOSC: 'Versió Original Subtitulada en Català',
+  VOSE: 'Versió Original Subtitulada en Espanyol',
+};
 const genreFirst = film.genre ? film.genre.split(' · ')[0] : '';
 
 // Space-separated list of provinces where this film is showing (for province filter)
@@ -108,7 +115,9 @@ const filmJson = JSON.stringify({
   <div class="card-info">
     <div class="card-title">{film.title}</div>
     <div class="card-meta">
-      <span class={`badge${isVO ? ' vo' : ''}`}>{film.version}</span>
+      <span class={`badge${isVO ? ' vo' : ''}`}>
+        <abbr title={VERSION_LABELS[film.version] ?? film.version}>{film.version}</abbr>
+      </span>
       <span>{genreFirst}</span>
     </div>
   </div>
