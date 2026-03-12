@@ -448,14 +448,26 @@ const {
         color: var(--muted);
         font-size: 0.875rem;
       }
+      @keyframes searchSlideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
       @media (max-width: 640px) {
         .search-inner {
-          margin: 56px 0 0;
+          margin: 64px 0 0;
           width: 100%;
-          border-radius: 0;
+          border-radius: 0 0 14px 14px;
           border-left: none;
           border-right: none;
           border-top: none;
+          box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
+          animation: searchSlideDown 0.18s ease;
         }
         .search-results {
           max-height: min(380px, 60dvh);
@@ -1565,6 +1577,10 @@ const {
         }
         .hamburger {
           display: flex;
+        }
+        /* Push search button right so [🔍][MENU] sit together */
+        .search-btn {
+          margin-left: auto;
         }
         h1 {
           letter-spacing: 1px;
