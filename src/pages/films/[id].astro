@@ -6,7 +6,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
 import { fetchFilms } from '../../lib/filmcat';
-import { fetchTMDBPoster } from '../../lib/tmdb';
+import { fetchTMDBPoster, fetchTMDBDetails } from '../../lib/tmdb';
 import { slugify, cinemaSlug } from '../../lib/slug';
 import { CINEMA_URLS } from '../../lib/cinema-urls';
 import { cityToProvince } from '../../lib/provinces';
@@ -30,6 +30,13 @@ if (tmdb) {
   film.posterPath = tmdb.posterPath;
   film.backdropPath = tmdb.backdropPath;
   film._tmdbId = tmdb.tmdbId;
+
+  // Fetch runtime + genres (single extra call; cached with 8h TTL)
+  const details = await fetchTMDBDetails(tmdb.tmdbId);
+  if (details) {
+    if (details.runtime) film.runtime = details.runtime;
+    if (details.genres.length) film.genres = details.genres;
+  }
 }
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://filmcat.cat';
@@ -46,6 +53,34 @@ const description = film.synopsis
 
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const ri = ratingInfo(film.rating);
+
+// Clean first language: "català (60 %); castellà" → "català"
+const cleanLanguage = film.language
+  ? film.language
+      .split(';')[0]
+      .replace(/\s*\(\d+\s*%\)/, '')
+      .trim()
+  : '';
+
+// Format premiere date to Catalan: "06/03/2026" → "6 de març de 2026"
+function formatPremiere(raw: string | undefined): string | null {
+  if (!raw || raw === '--') return null;
+  const parts = raw.split('/');
+  if (parts.length !== 3) return null;
+  const [d, m, y] = parts.map(Number);
+  if (!d || !m || !y) return null;
+  try {
+    return new Intl.DateTimeFormat('ca', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(y, m - 1, d));
+  } catch {
+    return raw;
+  }
+}
+const premiereDisplay = formatPremiere(film.premiere);
+
 const versionLabel: Record<string, string> = {
   VD: 'Versió Doblada',
   VO: 'Versió Original',
@@ -76,6 +111,8 @@ const jsonLd = {
   datePublished: String(film.year),
   ...(film.director ? { director: { '@type': 'Person', name: film.director } } : {}),
   ...(posterUrl ? { image: posterUrl } : {}),
+  ...(film.runtime ? { duration: `PT${film.runtime}M` } : {}),
+  ...(film.genres?.length ? { genre: film.genres } : {}),
   ...(film.rating && film.rating !== '--' ? { contentRating: film.rating } : {}),
   url: canonicalUrl,
   inLanguage: 'ca',
@@ -219,10 +256,25 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                   </span>
                 )
               }
-              {film.genre && <span class="tag">{film.genre.split(' · ')[0]}</span>}
+              {cleanLanguage && <span class="tag">{cleanLanguage}</span>}
+              {film.genres?.[0] && <span class="tag">{film.genres[0]}</span>}
+              {
+                film.runtime && (
+                  <span class="tag" aria-label={`Durada: ${film.runtime} minuts`}>
+                    {film.runtime} min
+                  </span>
+                )
+              }
               {film.year && <span class="tag">{film.year}</span>}
               {film.director && <span class="tag">{film.director}</span>}
             </div>
+            {
+              premiereDisplay && (
+                <p class="film-premiere" aria-label={`Data d'estrena: ${premiereDisplay}`}>
+                  <span aria-hidden="true">📅</span> Estrena: {premiereDisplay}
+                </p>
+              )
+            }
           </div>
         </div>
       </div>

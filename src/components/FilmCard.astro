@@ -32,6 +32,23 @@ const abbr = film.title
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const ri = ratingInfo(film.rating);
 
+// Compact premiere for upcoming films: "06/03/2026" → "6 de mar."
+function premiereCompact(raw: string | undefined): string | null {
+  if (!raw || raw === '--') return null;
+  const parts = raw.split('/');
+  if (parts.length !== 3) return null;
+  const [d, m, y] = parts.map(Number);
+  if (!d || !m || !y) return null;
+  try {
+    return new Intl.DateTimeFormat('ca', { day: 'numeric', month: 'short' }).format(
+      new Date(y, m - 1, d)
+    );
+  } catch {
+    return null;
+  }
+}
+const premiereLabel = isUpcoming ? premiereCompact(film.premiere) : null;
+
 const VERSION_LABELS: Record<string, string> = {
   VD: 'Versió Doblada',
   VO: 'Versió Original',
@@ -79,7 +96,7 @@ const filmJson = JSON.stringify({
   data-version={film.version}
   data-province={filmProvinces}
   data-film={filmJson}
-  aria-label={`${film.title} (${film.year}), versió ${film.version}${ri ? `, ${ri.full}` : ''}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
+  aria-label={`${film.title} (${film.year}), versió ${film.version}${ri ? `, ${ri.full}` : ''}${!isUpcoming ? `, ${sessionCount} sessions avui` : `${premiereLabel ? `, estrena ${premiereLabel}` : ', pròximament'}`}`}
 >
   <div class="card-img-wrap">
     {
@@ -128,6 +145,13 @@ const filmJson = JSON.stringify({
         )
       }
       <span>{genreFirst}</span>
+      {
+        isUpcoming && premiereLabel && (
+          <span class="tag tag-premiere" aria-label={`Estrena: ${film.premiere}`}>
+            {premiereLabel}
+          </span>
+        )
+      }
     </div>
   </div>
 </a>

@@ -31,6 +31,8 @@ export interface Film {
   backdropPath: string | null;
   _tmdbId?: number;
   _trailerKey?: string | null;
+  runtime?: number; // minutes, from TMDB /movie/{id} (detail page only)
+  genres?: string[]; // genre names in Catalan, from TMDB (detail page only)
 }
 
 export interface Cinema {

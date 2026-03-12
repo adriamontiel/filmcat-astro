@@ -19,6 +19,11 @@ export interface TMDBResult {
   tmdbId: number;
 }
 
+export interface TMDBDetails {
+  runtime: number | null;
+  genres: string[];
+}
+
 // ── In-process cache ─────────────────────────────────────────────────────────
 // Key: `${searchTitle}__${year}`
 // Value: { result, expiresAt }
@@ -112,3 +117,84 @@ export async function fetchTMDBPoster(
 
 export const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 export const TMDB_BIG = 'https://image.tmdb.org/t/p/w780';
+
+// ── Genre name translations (EN → CA) ────────────────────────────────────────
+// TMDB's Catalan translations are incomplete; this map fills the gaps so users
+// always see genre names in Catalan.
+const GENRE_CA: Record<string, string> = {
+  Action: 'Acció',
+  Adventure: 'Aventura',
+  Animation: 'Animació',
+  Comedy: 'Comèdia',
+  Crime: 'Crim',
+  Documentary: 'Documental',
+  Drama: 'Drama',
+  Family: 'Família',
+  Fantasy: 'Fantasia',
+  History: 'Història',
+  Horror: 'Terror',
+  Music: 'Música',
+  Mystery: 'Misteri',
+  Romance: 'Romanç',
+  'Science Fiction': 'Ciència-ficció',
+  'TV Movie': 'Telefilm',
+  Thriller: 'Thriller',
+  War: 'Bèl·lic',
+  Western: 'Western',
+};
+
+function toCA(name: string): string {
+  return GENRE_CA[name] ?? name;
+}
+
+// ── TMDB Film Details (runtime + genres) ─────────────────────────────────────
+// Used on the individual film detail page only (not fetched for all 80 films
+// on the index page). Cached with the same 8-hour TTL as poster results.
+
+interface DetailsCacheEntry {
+  result: TMDBDetails | null;
+  expiresAt: number;
+}
+
+const _detailsCache = new Map<number, DetailsCacheEntry>();
+
+/**
+ * Fetches runtime and genre names (in Catalan) for a film already identified
+ * by its TMDB ID. Returns null if the API is unavailable or the key is missing.
+ */
+export async function fetchTMDBDetails(tmdbId: number): Promise<TMDBDetails | null> {
+  if (!TMDB_KEY) return null;
+
+  // Cache hit
+  const cached = _detailsCache.get(tmdbId);
+  if (cached) {
+    if (Date.now() < cached.expiresAt) return cached.result;
+    _detailsCache.delete(tmdbId);
+  }
+
+  try {
+    const r = await fetch(
+      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_KEY}&language=ca`,
+      { signal: AbortSignal.timeout(6000) }
+    );
+    if (!r.ok) {
+      _detailsCache.set(tmdbId, { result: null, expiresAt: Date.now() + TTL_MS });
+      return null;
+    }
+
+    const data = await r.json();
+
+    const result: TMDBDetails = {
+      runtime: typeof data.runtime === 'number' && data.runtime > 0 ? data.runtime : null,
+      genres: Array.isArray(data.genres)
+        ? (data.genres as Array<{ name: string }>).map((g) => toCA(g.name))
+        : [],
+    };
+
+    _detailsCache.set(tmdbId, { result, expiresAt: Date.now() + TTL_MS });
+    return result;
+  } catch {
+    _detailsCache.set(tmdbId, { result: null, expiresAt: Date.now() + TTL_MS });
+    return null;
+  }
+}

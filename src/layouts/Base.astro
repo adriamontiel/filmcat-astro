@@ -1181,6 +1181,12 @@ const {
         color: var(--muted);
         letter-spacing: 0.8px;
       }
+      /* Premiere tag: subtly highlighted for upcoming films */
+      .tag-premiere {
+        background: rgba(232, 201, 122, 0.08);
+        color: var(--gold);
+        border: 1px solid rgba(232, 201, 122, 0.18);
+      }
       .modal-body {
         padding: clamp(1rem, 4vw, 1.75rem);
       }
@@ -1721,6 +1727,12 @@ const {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
+      }
+      .film-premiere {
+        margin-top: 10px;
+        font-size: 0.75rem;
+        color: var(--muted);
+        letter-spacing: 0.2px;
       }
       .film-body {
         padding: 1.25rem var(--px) 0;
