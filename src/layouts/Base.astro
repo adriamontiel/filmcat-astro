@@ -43,6 +43,8 @@ const {
     <meta name="twitter:card" content="summary_large_image" />
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     {canonical && <link rel="canonical" href={canonical} />}
     <ViewTransitions />
     <style is:global>
@@ -570,7 +572,7 @@ const {
       }
       .card:focus-visible {
         border-color: var(--red-focus);
-        outline: none;
+        /* outline comes from the global a:focus-visible rule — don't suppress it */
         transform: translateY(-4px);
       }
       .card-img-wrap {
@@ -1201,6 +1203,11 @@ const {
         text-decoration: none;
         color: var(--text);
         opacity: 0.5;
+      }
+      /* WCAG 2.4.7: opacity:0.5 would render the focus ring at half opacity too —
+         restore full opacity when keyboard-focused so the indicator is clearly visible */
+      .footer-logo:focus-visible {
+        opacity: 1;
       }
       .footer-logo svg {
         width: 26px;
