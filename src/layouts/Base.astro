@@ -947,6 +947,25 @@ const {
         border-color: rgba(232, 201, 122, 0.2);
         color: var(--gold);
       }
+      /* Rating badge — colour-coded by age level */
+      .badge.rating {
+        /* low: TP, +3…+7 — green */
+        background: rgba(46, 184, 100, 0.12);
+        border-color: rgba(46, 184, 100, 0.28);
+        color: #52d68a; /* contrast ≈5.0:1 on dark bg */
+      }
+      .badge.rating.mid {
+        /* mid: +10, +12 — amber */
+        background: rgba(243, 180, 30, 0.12);
+        border-color: rgba(243, 180, 30, 0.28);
+        color: #f6c846; /* contrast ≈6.4:1 */
+      }
+      .badge.rating.high {
+        /* high: +16, +18 — orange */
+        background: rgba(230, 107, 34, 0.14);
+        border-color: rgba(230, 107, 34, 0.3);
+        color: #e8924c; /* contrast ≈4.6:1 */
+      }
       /* ── SKELETON ── */
       .skeleton {
         background: linear-gradient(

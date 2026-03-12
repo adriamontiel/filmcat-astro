@@ -10,6 +10,7 @@ import { fetchTMDBPoster } from '../../lib/tmdb';
 import { slugify, cinemaSlug } from '../../lib/slug';
 import { CINEMA_URLS } from '../../lib/cinema-urls';
 import { cityToProvince } from '../../lib/provinces';
+import { ratingInfo } from '../../lib/rating';
 
 const { id } = Astro.params; // slug from URL
 
@@ -44,6 +45,7 @@ const description = film.synopsis
   : `${film.title} — Cinema en Català. Horaris i sessions a Catalunya.`;
 
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const ri = ratingInfo(film.rating);
 const versionLabel: Record<string, string> = {
   VD: 'Versió Doblada',
   VO: 'Versió Original',
@@ -74,6 +76,7 @@ const jsonLd = {
   datePublished: String(film.year),
   ...(film.director ? { director: { '@type': 'Person', name: film.director } } : {}),
   ...(posterUrl ? { image: posterUrl } : {}),
+  ...(film.rating && film.rating !== '--' ? { contentRating: film.rating } : {}),
   url: canonicalUrl,
   inLanguage: 'ca',
   offers:
@@ -209,6 +212,13 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
               <span class={`badge${isVO ? ' vo' : ''}`}>
                 <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
               </span>
+              {
+                ri && (
+                  <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
+                    <abbr title={ri.full}>{ri.short}</abbr>
+                  </span>
+                )
+              }
               {film.genre && <span class="tag">{film.genre.split(' · ')[0]}</span>}
               {film.year && <span class="tag">{film.year}</span>}
               {film.director && <span class="tag">{film.director}</span>}

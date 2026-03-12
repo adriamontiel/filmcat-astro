@@ -5,6 +5,7 @@ import type { Film } from '../lib/types';
 import { TMDB_IMG } from '../lib/tmdb';
 import { slugify } from '../lib/slug';
 import { cityToProvince } from '../lib/provinces';
+import { ratingInfo } from '../lib/rating';
 
 interface Props {
   film: Film;
@@ -29,6 +30,7 @@ const abbr = film.title
   .slice(0, 3);
 
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+const ri = ratingInfo(film.rating);
 
 const VERSION_LABELS: Record<string, string> = {
   VD: 'Versió Doblada',
@@ -77,7 +79,7 @@ const filmJson = JSON.stringify({
   data-version={film.version}
   data-province={filmProvinces}
   data-film={filmJson}
-  aria-label={`${film.title} (${film.year}), versió ${film.version}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
+  aria-label={`${film.title} (${film.year}), versió ${film.version}${ri ? `, ${ri.full}` : ''}${!isUpcoming ? `, ${sessionCount} sessions avui` : ', pròximament'}`}
 >
   <div class="card-img-wrap">
     {
@@ -118,6 +120,13 @@ const filmJson = JSON.stringify({
       <span class={`badge${isVO ? ' vo' : ''}`}>
         <abbr title={VERSION_LABELS[film.version] ?? film.version}>{film.version}</abbr>
       </span>
+      {
+        ri && (
+          <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
+            <abbr title={ri.full}>{ri.short}</abbr>
+          </span>
+        )
+      }
       <span>{genreFirst}</span>
     </div>
   </div>
