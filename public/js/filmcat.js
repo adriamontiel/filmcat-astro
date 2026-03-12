@@ -68,11 +68,11 @@
       !film.upcoming && film.cinemaCount > 0
         ? `<span class="search-result-meta">${film.cinemaCount} ${film.cinemaCount === 1 ? 'cinema' : 'cinemes'}</span>`
         : '';
-    return `<a href="/films/${sanitize(film.id)}" class="search-result" role="option" aria-selected="false" data-result-idx="${idx}" tabindex="-1">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
+    return `<a href="/films/${sanitize(film.id)}" class="search-result" aria-selected="false" data-result-idx="${idx}">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
   }
 
   function cinemaResultHTML(cinema, idx) {
-    return `<a href="/cinemes/${sanitize(slugifyClient(cinema.name))}" class="search-result" role="option" aria-selected="false" data-result-idx="${idx}" tabindex="-1"><div class="search-result-cinema-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="search-result-info"><span class="search-result-title">${sanitize(cinema.name)}</span><span class="search-result-meta">${sanitize(cinema.city)}</span></div></a>`;
+    return `<a href="/cinemes/${sanitize(slugifyClient(cinema.name))}" class="search-result" aria-selected="false" data-result-idx="${idx}"><div class="search-result-cinema-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="search-result-info"><span class="search-result-title">${sanitize(cinema.name)}</span><span class="search-result-meta">${sanitize(cinema.city)}</span></div></a>`;
   }
 
   function buildSearchHTML(query, data) {
@@ -579,6 +579,25 @@
         searchBtn?.focus();
       });
     }
+
+    // Result click — close dialog then navigate.
+    // Astro View Transitions doesn't intercept <a> clicks inside showModal() dialogs,
+    // so we handle navigation explicitly via a temp link dispatched outside the dialog.
+    searchResults?.addEventListener('click', (e) => {
+      const link = e.target.closest('a.search-result');
+      if (!link) return;
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (!href) return;
+      searchDialog?.close();
+      // Dispatch click on a temporary <a> outside the dialog so Astro View
+      // Transitions intercepts it and animates the page swap normally.
+      const nav = document.createElement('a');
+      nav.href = href;
+      document.body.appendChild(nav);
+      nav.click();
+      nav.remove();
+    });
 
     if (searchInput) {
       searchInput.addEventListener('input', () => {
