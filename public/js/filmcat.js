@@ -68,11 +68,11 @@
       !film.upcoming && film.cinemaCount > 0
         ? `<span class="search-result-meta">${film.cinemaCount} ${film.cinemaCount === 1 ? 'cinema' : 'cinemes'}</span>`
         : '';
-    return `<a href="/films/${sanitize(film.slug)}" class="search-result" aria-selected="false" data-result-idx="${idx}">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
+    return `<a href="/films/${sanitize(film.slug)}" class="search-result" data-result-idx="${idx}">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
   }
 
   function cinemaResultHTML(cinema, idx) {
-    return `<a href="/cinemes/${sanitize(slugifyClient(cinema.name))}" class="search-result" aria-selected="false" data-result-idx="${idx}"><div class="search-result-cinema-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="search-result-info"><span class="search-result-title">${sanitize(cinema.name)}</span><span class="search-result-meta">${sanitize(cinema.city)}</span></div></a>`;
+    return `<a href="/cinemes/${sanitize(slugifyClient(cinema.name))}" class="search-result" data-result-idx="${idx}"><div class="search-result-cinema-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="search-result-info"><span class="search-result-title">${sanitize(cinema.name)}</span><span class="search-result-meta">${sanitize(cinema.city)}</span></div></a>`;
   }
 
   function buildSearchHTML(query, data) {
@@ -530,11 +530,11 @@
 
     function setSearchActive(idx) {
       const items = searchResults?.querySelectorAll('.search-result') || [];
-      items.forEach((el) => el.setAttribute('aria-selected', 'false'));
+      items.forEach((el) => el.removeAttribute('data-active'));
       searchActiveIdx = Math.max(-1, Math.min(items.length - 1, idx));
       if (searchActiveIdx >= 0) {
         const active = items[searchActiveIdx];
-        active?.setAttribute('aria-selected', 'true');
+        active?.setAttribute('data-active', 'true');
         active?.scrollIntoView({ block: 'nearest' });
       }
     }

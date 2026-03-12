@@ -212,20 +212,17 @@ const {
         border: none;
         cursor: pointer;
         padding: 6px;
-        color: var(--muted);
+        color: var(--text);
         display: flex;
         align-items: center;
         justify-content: center;
         min-width: 44px;
         min-height: 44px;
         border-radius: 8px;
-        transition:
-          color 0.2s,
-          background 0.2s;
+        transition: background 0.2s;
         flex-shrink: 0;
       }
       .search-btn:hover {
-        color: var(--text);
         background: rgba(255, 255, 255, 0.06);
       }
       .search-btn:focus-visible {
@@ -373,7 +370,7 @@ const {
       }
       .search-result:hover,
       .search-result:focus,
-      .search-result[aria-selected='true'] {
+      .search-result[data-active='true'] {
         background: var(--surface2);
       }
       .search-result-thumb {
