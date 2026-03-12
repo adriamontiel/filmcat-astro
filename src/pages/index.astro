@@ -20,7 +20,18 @@ const [{ films: rawFilms, comingSoon: rawComingSoon, isOffline }, cinemasFromApi
 // are semantically "coming soon" — move them to the upcoming section so they
 // don't clutter the main grid with "Pròximament" placeholders.
 const films = rawFilms.filter((f) => f.sessions.length > 0);
-const comingSoon = [...rawFilms.filter((f) => f.sessions.length === 0), ...rawComingSoon];
+const comingSoon = [...rawFilms.filter((f) => f.sessions.length === 0), ...rawComingSoon].sort(
+  (a, b) => {
+    // Parse "DD/MM/YYYY" → timestamp; films with no/invalid date sort last
+    const toTs = (raw: string | undefined) => {
+      if (!raw || raw === '--') return Infinity;
+      const [d, m, y] = raw.split('/').map(Number);
+      if (!d || !m || !y) return Infinity;
+      return new Date(y, m - 1, d).getTime();
+    };
+    return toTs(a.premiere) - toTs(b.premiere);
+  }
+);
 
 // ── TMDB posters (server-side, API key stays private) ──
 await Promise.allSettled(
