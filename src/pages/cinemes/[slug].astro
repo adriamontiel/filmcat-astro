@@ -1,0 +1,221 @@
+---
+// cinemes/[slug].astro — individual cinema detail page (SSR)
+// URL: /cinemes/cinesa-diagonal-mar
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import FilmCard from '../../components/FilmCard.astro';
+
+import { fetchFilms } from '../../lib/filmcat';
+import { fetchTMDBPoster } from '../../lib/tmdb';
+import { cinemaSlug } from '../../lib/slug';
+import { CINEMA_URLS } from '../../lib/cinema-urls';
+import { sanitizeUrl } from '../../lib/sanitize';
+
+const { slug } = Astro.params;
+
+// ── Fetch all films ──
+const { films } = await fetchFilms();
+
+// ── Find cinema by slug ──
+const allCinemaNames = [...new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema)))];
+const cinemaName = allCinemaNames.find((name) => cinemaSlug(name) === slug);
+
+// Redirect home if cinema not found
+if (!cinemaName) {
+  return Astro.redirect('/', 302);
+}
+
+// ── Cinema metadata ──
+const cinemaCity =
+  films.flatMap((f) => f.sessions).find((s) => s.cinema === cinemaName)?.city ?? '';
+
+// ── Films playing at this cinema, sorted by session count (desc) ──
+const filmSessionCount: Record<string, number> = {};
+for (const film of films) {
+  for (const session of film.sessions) {
+    if (session.cinema === cinemaName) {
+      filmSessionCount[film.id] = (filmSessionCount[film.id] ?? 0) + session.times.length;
+    }
+  }
+}
+const cinemaFilms = films
+  .filter((f) => filmSessionCount[f.id] !== undefined)
+  .sort((a, b) => (filmSessionCount[b.id] ?? 0) - (filmSessionCount[a.id] ?? 0));
+
+// ── TMDB posters for these films ──
+await Promise.allSettled(
+  cinemaFilms.map(async (film) => {
+    const result = await fetchTMDBPoster(film.searchTitle, film.year);
+    if (result) {
+      film.posterPath = result.posterPath;
+      film.backdropPath = result.backdropPath;
+      film._tmdbId = result.tmdbId;
+    }
+  })
+);
+
+// ── Links ──
+const mapsUrl = sanitizeUrl(
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cinemaName}, ${cinemaCity}`)}`
+);
+const webUrl = CINEMA_URLS[cinemaName] ?? null;
+
+// ── SEO ──
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://filmcat.cat';
+const canonicalUrl = `${siteUrl}/cinemes/${slug}`;
+const description =
+  cinemaFilms.length > 0
+    ? `${cinemaName} — ${cinemaFilms.length} pel·lícules en català aquesta setmana. Horaris i sessions a ${cinemaCity}.`
+    : `${cinemaName} — Cinema a ${cinemaCity}. Consulta la programació en català.`;
+
+// ── Footer stats ──
+const totalFilmCount = films.length;
+const totalCinemaCount = new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema))).size;
+const totalSessionCount = films.reduce(
+  (a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0),
+  0
+);
+
+// ── Cache ──
+Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
+
+// ── JSON-LD ──
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'MovieTheater',
+  name: cinemaName,
+  address: { '@type': 'PostalAddress', addressLocality: cinemaCity, addressCountry: 'ES' },
+  url: canonicalUrl,
+};
+const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inici', item: `${siteUrl}/` },
+    { '@type': 'ListItem', position: 2, name: 'Cinemes', item: `${siteUrl}/#cinemes` },
+    { '@type': 'ListItem', position: 3, name: cinemaName, item: canonicalUrl },
+  ],
+};
+const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\\/script>');
+---
+
+<Base title={`${cinemaName} — FILMCAT`} description={description} canonical={canonicalUrl}>
+  <Header />
+
+  <main id="main-content">
+    <div class="cinema-page">
+      <!-- ── HERO ── -->
+      <div class="cinema-hero">
+        <div class="cinema-hero-bg" aria-hidden="true"></div>
+        <div class="cinema-hero-content">
+          <a href="/#cinemes" class="film-back-link" aria-label="Tornar als cinemes"> ← Cinemes </a>
+
+          <div class="cinema-hero-eyebrow">
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            {cinemaCity}
+          </div>
+
+          <h1 class="cinema-title">{cinemaName}</h1>
+
+          <p class="cinema-subtitle">
+            {
+              cinemaFilms.length > 0
+                ? `${cinemaFilms.length} pel·lícula${cinemaFilms.length !== 1 ? 's' : ''} en català aquesta setmana`
+                : 'Cinema en català'
+            }
+          </p>
+
+          <div class="cinema-actions">
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="trailer-btn"
+              aria-label={`Com arribar a ${cinemaName}`}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Com arribar
+            </a>
+            {
+              webUrl && (
+                <a
+                  href={webUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="trailer-btn"
+                  aria-label={`Web oficial de ${cinemaName}`}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                  Web oficial
+                </a>
+              )
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FILMS ── -->
+      <div class="cinema-body">
+        {
+          cinemaFilms.length === 0 ? (
+            <p class="status-msg">
+              Aquest cinema no té sessions en català aquesta setmana. Torna a consultar aviat.
+            </p>
+          ) : (
+            <div class="carousel" role="list" aria-label={`Pel·lícules en català a ${cinemaName}`}>
+              {cinemaFilms.map((film) => (
+                <FilmCard film={film} />
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </main>
+
+  <Footer
+    filmCount={totalFilmCount}
+    cinemaCount={totalCinemaCount}
+    sessionCount={totalSessionCount}
+  />
+
+  <script type="application/ld+json" set:html={jsonLdStr} />
+  <script type="application/ld+json" set:html={breadcrumbLdStr} />
+</Base>

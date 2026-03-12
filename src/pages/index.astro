@@ -44,6 +44,30 @@ for (const film of films) {
   }
 }
 
+// ── Top 3 poster URLs per cinema (films with most sessions, descending) ──
+// Computed here so CinemaCard gets pre-resolved URLs — no extra TMDB calls needed.
+type FilmSession = { film: (typeof films)[0]; sessionCount: number };
+const cinemaFilmsMap: Record<string, FilmSession[]> = {};
+for (const film of films) {
+  for (const session of film.sessions) {
+    if (!cinemaFilmsMap[session.cinema]) cinemaFilmsMap[session.cinema] = [];
+    const existing = cinemaFilmsMap[session.cinema].find((cf) => cf.film.id === film.id);
+    if (existing) {
+      existing.sessionCount += session.times.length;
+    } else {
+      cinemaFilmsMap[session.cinema].push({ film, sessionCount: session.times.length });
+    }
+  }
+}
+const cinemaTopPosters: Record<string, string[]> = {};
+for (const [name, filmSessions] of Object.entries(cinemaFilmsMap)) {
+  cinemaTopPosters[name] = filmSessions
+    .sort((a, b) => b.sessionCount - a.sessionCount)
+    .slice(0, 3)
+    .filter((cf) => cf.film.posterPath)
+    .map((cf) => `https://image.tmdb.org/t/p/w185${cf.film.posterPath}`);
+}
+
 // ── Cinemas: use API data if available, else derive from sessions ──
 import type { Cinema } from '../lib/types';
 let cinemas: Cinema[];
@@ -273,7 +297,11 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
         {
           PROVINCE_ORDER.flatMap((p) =>
             (cinemasByProvince.get(p) ?? []).map((cinema) => (
-              <CinemaCard cinema={cinema} province={p} />
+              <CinemaCard
+                cinema={cinema}
+                province={p}
+                topPosters={cinemaTopPosters[cinema.name] ?? []}
+              />
             ))
           )
         }

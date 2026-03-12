@@ -705,31 +705,90 @@ const {
         grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
         gap: 12px;
       }
+      /* ── CINEMA CARD (redesigned) ── */
       .cinema-card {
         background: var(--surface);
         border: 1.5px solid var(--border);
         border-radius: var(--r-card);
-        padding: 1rem 1.125rem;
         display: flex;
         flex-direction: column;
-        transition: opacity 0.15s ease;
+        text-decoration: none;
+        color: inherit;
+        overflow: hidden;
+        transition:
+          transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          border-color 0.2s;
       }
       .cinema-card[hidden] {
         display: none;
       }
-      .cinema-card-bottom {
-        margin-top: auto;
-        padding-top: 13px;
+      .cinema-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(192, 57, 43, 0.45);
+      }
+      .cinema-card:focus-visible {
+        border-color: var(--red-focus);
+        outline: 3px solid var(--red-focus);
+        outline-offset: 2px;
+      }
+      /* Poster strip */
+      .cinema-card-posters {
+        display: flex;
+        height: 88px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--bg3);
+      }
+      .cinema-card-poster {
+        flex: 1;
+        overflow: hidden;
+      }
+      .cinema-card-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.4s ease;
+      }
+      .cinema-card:hover .cinema-card-poster img {
+        transform: scale(1.06);
+      }
+      .cinema-card-poster-placeholder {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg3);
+      }
+      .cinema-card-poster-extra {
+        flex-shrink: 0;
+        width: 38px;
+        background: var(--surface2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--muted);
+        border-left: 1px solid var(--border);
+      }
+      /* Card body */
+      .cinema-card-body {
+        padding: 11px 13px 13px;
         display: flex;
         flex-direction: column;
         gap: 7px;
-        align-items: flex-start;
+        flex: 1;
       }
-      .cinema-card-bottom .session-cinema-city {
-        margin-top: 0;
+      .cinema-card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 4px;
       }
       .cinema-films-count {
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         color: var(--red-light);
         font-weight: 500;
       }
@@ -1417,6 +1476,60 @@ const {
       }
       .film-back-link:hover {
         color: var(--red-light);
+      }
+      /* ── CINEMA DETAIL PAGE ── */
+      .cinema-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 0 80px;
+      }
+      .cinema-hero {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(90px, 16vw, 140px) var(--px) clamp(28px, 5vw, 44px);
+      }
+      .cinema-hero-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 65% 35%, rgba(192, 57, 43, 0.13) 0%, transparent 60%),
+          radial-gradient(ellipse at 15% 75%, rgba(146, 43, 33, 0.08) 0%, transparent 50%);
+        pointer-events: none;
+      }
+      .cinema-hero-content {
+        position: relative;
+        z-index: 2;
+      }
+      .cinema-hero-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .cinema-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(1.75rem, 5vw, 3.25rem);
+        letter-spacing: 2px;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+      .cinema-subtitle {
+        font-size: 0.85rem;
+        color: var(--text-mid);
+        font-weight: 300;
+        margin-bottom: 20px;
+      }
+      .cinema-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .cinema-body {
+        padding: 1.5rem var(--px) 0;
       }
     </style>
   </head>
