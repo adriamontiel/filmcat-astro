@@ -206,6 +206,262 @@ const {
         z-index: 9990;
         opacity: 0.28;
       }
+      /* ── SEARCH BUTTON (header) ── */
+      .search-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 8px;
+        transition:
+          color 0.2s,
+          background 0.2s;
+        flex-shrink: 0;
+      }
+      .search-btn:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .search-btn:focus-visible {
+        outline: 3px solid var(--red-focus);
+        outline-offset: 2px;
+      }
+
+      /* ── SEARCH DIALOG ── */
+      .search-dialog {
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        background: transparent;
+        border: none;
+        padding: 0;
+        z-index: 500;
+        overflow: hidden;
+      }
+      .search-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.72);
+        backdrop-filter: blur(6px);
+      }
+      .search-inner {
+        margin: 72px auto 0;
+        max-width: 620px;
+        width: calc(100% - 2rem);
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+        animation: searchIn 0.18s ease;
+      }
+      @keyframes searchIn {
+        from {
+          opacity: 0;
+          transform: translateY(-6px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .search-bar-icon {
+        color: var(--muted);
+        flex-shrink: 0;
+        display: flex;
+      }
+      .search-input {
+        flex: 1;
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 1rem; /* ≥16px prevents iOS Safari auto-zoom */
+        font-family: inherit;
+        min-width: 0;
+      }
+      .search-input::placeholder {
+        color: var(--muted);
+      }
+      .search-esc-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.6rem;
+        font-family: inherit;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 3px 7px;
+        border-radius: 5px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.15s;
+      }
+      .search-esc-btn:hover {
+        background: var(--border);
+      }
+      .search-results {
+        max-height: min(440px, 55dvh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 6px 0;
+      }
+      /* Loading dots */
+      .search-loading {
+        padding: 20px 16px;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      .search-dots span {
+        display: inline-block;
+        opacity: 0;
+        animation: showDot 1.2s infinite;
+      }
+      .search-dots span:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+      .search-dots span:nth-child(3) {
+        animation-delay: 0.6s;
+      }
+      @keyframes showDot {
+        0%,
+        15% {
+          opacity: 0;
+        }
+        30%,
+        85% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      /* Section labels */
+      .search-section-label {
+        padding: 8px 16px 4px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      /* Result rows */
+      .search-result {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        text-decoration: none;
+        color: var(--text);
+        transition: background 0.1s;
+        outline: none;
+      }
+      .search-result:hover,
+      .search-result:focus,
+      .search-result[aria-selected='true'] {
+        background: var(--surface2);
+      }
+      .search-result-thumb {
+        width: 34px;
+        height: 50px;
+        border-radius: 4px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--bg3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+      }
+      .search-result-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .search-result-cinema-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--bg3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--muted);
+      }
+      .search-result-info {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+      }
+      .search-result-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+      }
+      .search-result-meta {
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+      .search-result-badge {
+        display: inline-block;
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--gold);
+        background: rgba(212, 175, 55, 0.1);
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        padding: 1px 5px;
+        border-radius: 3px;
+        line-height: 1.6;
+        align-self: flex-start;
+      }
+      .search-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
+      .search-no-results {
+        padding: 24px 16px;
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      @media (max-width: 640px) {
+        .search-inner {
+          margin: 56px 0 0;
+          width: 100%;
+          border-radius: 0;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+        }
+        .search-results {
+          max-height: min(380px, 60dvh);
+        }
+      }
+
       /* ── HEADER ── */
       header {
         position: fixed;
@@ -1536,6 +1792,52 @@ const {
   <body>
     <a href="#main-content" class="skip-link">Saltar al contingut principal</a>
     <slot />
+
+    <!-- ── SEARCH DIALOG ── -->
+    <dialog id="searchDialog" class="search-dialog" aria-label="Cercador de pel·lícules i cinemes">
+      <div class="search-inner">
+        <div class="search-bar">
+          <svg
+            class="search-bar-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+          <input
+            type="search"
+            id="searchInput"
+            class="search-input"
+            placeholder="Cerca pel·lícules o cinemes…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Cerca pel·lícules o cinemes"
+            aria-controls="searchResults"
+            aria-autocomplete="list"
+          />
+          <button class="search-esc-btn" id="searchCloseBtn" aria-label="Tancar cerca">
+            ESC
+          </button>
+        </div>
+        <div
+          id="searchResults"
+          class="search-results"
+          role="listbox"
+          aria-label="Resultats de cerca"
+          aria-live="polite"
+        >
+        </div>
+      </div>
+    </dialog>
+
     <script src="/js/filmcat.js" defer></script>
     <Analytics />
   </body>

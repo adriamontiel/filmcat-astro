@@ -1,5 +1,5 @@
 /* filmcat.js — vanilla JS interactivity for FILMCAT Astro
- * Covers: mobile nav, filter bar, modal (card click → quick-view)
+ * Covers: mobile nav, filter bar, modal (card click → quick-view), search dialog
  * All HTML injected via innerHTML uses sanitize() for XSS safety.
  * Uses astro:page-load for View Transitions compatibility.
  */
@@ -20,6 +20,98 @@
     if (!url) return '#';
     const t = String(url).trim();
     return /^https?:\/\//i.test(t) ? t : '#';
+  }
+
+  // ── SEARCH STATE (persists across navigations) ──
+  let _searchCache = null; // { films, cinemas } — cached after first fetch
+  let _searchFetchPromise = null; // in-flight fetch promise
+  let _searchGlobalKeyAttached = false; // prevent duplicate Cmd+K listeners
+
+  // Replicates slug.ts slugify() for client-side cinema URL building
+  function slugifyClient(str) {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  // Normalize text for matching (lowercase + strip diacritics)
+  function normalizeQuery(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
+  // Fetch search index from /api/search-index.json (cached in memory)
+  function fetchSearchData() {
+    if (_searchCache) return Promise.resolve(_searchCache);
+    if (_searchFetchPromise) return _searchFetchPromise;
+    _searchFetchPromise = fetch('/api/search-index.json')
+      .then((r) => r.json())
+      .then((data) => {
+        _searchCache = data;
+        return data;
+      })
+      .catch(() => ({ films: [], cinemas: [] }));
+    return _searchFetchPromise;
+  }
+
+  function filmResultHTML(film, idx) {
+    const thumb = film.posterPath
+      ? `<div class="search-result-thumb"><img src="https://image.tmdb.org/t/p/w92${sanitize(film.posterPath)}" alt="" loading="lazy" decoding="async"></div>`
+      : `<div class="search-result-thumb" aria-hidden="true"><svg viewBox="0 0 100 88" width="16" height="14"><polygon points="50,0 100,88 0,88" fill="currentColor" opacity="0.25"/></svg></div>`;
+    const badge = film.upcoming ? `<span class="search-result-badge">Pròximament</span>` : '';
+    const meta =
+      !film.upcoming && film.cinemaCount > 0
+        ? `<span class="search-result-meta">${film.cinemaCount} ${film.cinemaCount === 1 ? 'cinema' : 'cinemes'}</span>`
+        : '';
+    return `<a href="/films/${sanitize(film.id)}" class="search-result" role="option" aria-selected="false" data-result-idx="${idx}" tabindex="-1">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
+  }
+
+  function cinemaResultHTML(cinema, idx) {
+    return `<a href="/cinemes/${sanitize(slugifyClient(cinema.name))}" class="search-result" role="option" aria-selected="false" data-result-idx="${idx}" tabindex="-1"><div class="search-result-cinema-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="search-result-info"><span class="search-result-title">${sanitize(cinema.name)}</span><span class="search-result-meta">${sanitize(cinema.city)}</span></div></a>`;
+  }
+
+  function buildSearchHTML(query, data) {
+    const films = data.films || [];
+    const cinemas = data.cinemas || [];
+    const q = normalizeQuery(query.trim());
+
+    if (!q) {
+      // Empty state: top 4 current films (sorted by cinemaCount desc)
+      const top = films.filter((f) => !f.upcoming).slice(0, 4);
+      if (!top.length) return '';
+      return (
+        '<div class="search-section-label">Pel·lícules destacades</div>' +
+        top.map((f, i) => filmResultHTML(f, i)).join('')
+      );
+    }
+
+    const matchFilms = films.filter((f) => normalizeQuery(f.title).includes(q)).slice(0, 4);
+    const matchCinemas = cinemas
+      .filter((c) => normalizeQuery(c.name).includes(q) || normalizeQuery(c.city).includes(q))
+      .slice(0, 3);
+
+    if (!matchFilms.length && !matchCinemas.length) {
+      return `<div class="search-no-results">Cap resultat per «<strong>${sanitize(query.trim())}</strong>»</div>`;
+    }
+
+    let html = '';
+    if (matchFilms.length) {
+      html += '<div class="search-section-label">Pel·lícules</div>';
+      html += matchFilms.map((f, i) => filmResultHTML(f, i)).join('');
+    }
+    if (matchFilms.length && matchCinemas.length) {
+      html += '<div class="search-divider"></div>';
+    }
+    if (matchCinemas.length) {
+      html += '<div class="search-section-label">Cinemes</div>';
+      html += matchCinemas.map((c, i) => cinemaResultHTML(c, matchFilms.length + i)).join('');
+    }
+    return html;
   }
 
   // ── MODAL STATE (persists across navigations) ──
@@ -427,6 +519,126 @@
         }
       }
     });
+
+    // ── SEARCH ──
+    const searchDialog = document.getElementById('searchDialog');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchCloseBtn = document.getElementById('searchCloseBtn');
+    let searchActiveIdx = -1;
+
+    function setSearchActive(idx) {
+      const items = searchResults?.querySelectorAll('.search-result') || [];
+      items.forEach((el) => el.setAttribute('aria-selected', 'false'));
+      searchActiveIdx = Math.max(-1, Math.min(items.length - 1, idx));
+      if (searchActiveIdx >= 0) {
+        const active = items[searchActiveIdx];
+        active?.setAttribute('aria-selected', 'true');
+        active?.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    function openSearch() {
+      if (!searchDialog) return;
+      searchDialog.showModal();
+      searchInput?.focus();
+      // Pre-warm data + show empty state (top films)
+      fetchSearchData().then((data) => {
+        if (searchDialog.open && !searchInput?.value) {
+          if (searchResults) searchResults.innerHTML = buildSearchHTML('', data);
+        }
+      });
+    }
+
+    function closeSearch() {
+      if (!searchDialog?.open) return;
+      searchDialog.close();
+      searchActiveIdx = -1;
+      if (searchInput) searchInput.value = '';
+      if (searchResults) searchResults.innerHTML = '';
+      searchBtn?.focus();
+    }
+
+    // Search button
+    searchBtn?.addEventListener('click', openSearch);
+
+    // ESC button inside dialog
+    searchCloseBtn?.addEventListener('click', closeSearch);
+
+    if (searchDialog) {
+      // Click on ::backdrop (e.target === dialog itself)
+      searchDialog.addEventListener('click', (e) => {
+        if (e.target === searchDialog) closeSearch();
+      });
+      // Native dialog cancel (ESC key) — clean up state
+      searchDialog.addEventListener('close', () => {
+        searchActiveIdx = -1;
+        if (searchInput) searchInput.value = '';
+        if (searchResults) searchResults.innerHTML = '';
+        searchBtn?.focus();
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const q = searchInput.value;
+        searchActiveIdx = -1;
+        if (_searchCache) {
+          // Data already loaded — instant search, no loading indicator
+          if (searchResults) searchResults.innerHTML = buildSearchHTML(q, _searchCache);
+        } else {
+          // Still fetching — show animated loading indicator
+          if (searchResults)
+            searchResults.innerHTML =
+              '<div class="search-loading">Buscant<span class="search-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></div>';
+          fetchSearchData().then((data) => {
+            // Only update if the query hasn't changed while we were loading
+            if (searchInput.value === q && searchResults)
+              searchResults.innerHTML = buildSearchHTML(q, data);
+          });
+        }
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        const items = searchResults?.querySelectorAll('.search-result') || [];
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setSearchActive(searchActiveIdx + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (searchActiveIdx <= 0) {
+            setSearchActive(-1);
+            searchInput.focus();
+          } else {
+            setSearchActive(searchActiveIdx - 1);
+          }
+        } else if (e.key === 'Enter' && searchActiveIdx >= 0) {
+          e.preventDefault();
+          const active = items[searchActiveIdx];
+          if (active) {
+            active.click();
+            closeSearch();
+          }
+        }
+      });
+    }
+
+    // Cmd+K / Ctrl+K — attach only once (persists in the IIFE closure)
+    if (!_searchGlobalKeyAttached) {
+      _searchGlobalKeyAttached = true;
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          const dlg = document.getElementById('searchDialog');
+          if (dlg?.open) {
+            closeSearch();
+          } else {
+            openSearch();
+          }
+        }
+      });
+    }
   }
 
   // astro:page-load fires on first load AND on every View Transitions navigation
