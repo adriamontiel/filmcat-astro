@@ -1,6 +1,6 @@
 {
   "name": "FILMCAT — Cinema en Català",
-  "short_name": "FILMCAT",
+  "short_name": "Filmcat",
   "description": "Totes les pel·lícules en català als cinemes de Catalunya",
   "start_url": "/",
   "display": "standalone",
