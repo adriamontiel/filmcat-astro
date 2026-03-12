@@ -386,22 +386,10 @@
         });
         document.querySelectorAll('[data-cinema-province]').forEach((card) => {
           const show = selected === 'all' || card.dataset.cinemaProvince === selected;
-          if (show) {
-            if (card.hidden) {
-              card.hidden = false;
-              void card.offsetWidth; // force reflow
-            }
-            card.style.opacity = '1';
-          } else {
-            card.style.opacity = '0';
-            card.addEventListener(
-              'transitionend',
-              () => {
-                if (card.style.opacity === '0') card.hidden = true;
-              },
-              { once: true }
-            );
-          }
+          // Hide/show instantly (same approach as film cards).
+          // transitionend is unreliable here because .cinema-card only
+          // transitions transform + border-color, not opacity.
+          card.hidden = !show;
         });
       });
     }
