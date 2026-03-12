@@ -42,7 +42,30 @@ export const GET: APIRoute = async () => {
     upcoming: true,
   }));
 
-  const cinemaResults = cinemasFromApi.map((c) => ({
+  // If the Gencat cinema API is empty (happens often), derive from session data
+  let cinemaList = cinemasFromApi;
+  if (cinemaList.length === 0) {
+    const seen = new Set<string>();
+    cinemaList = [];
+    for (const film of films) {
+      for (const session of film.sessions) {
+        if (!seen.has(session.cinema)) {
+          seen.add(session.cinema);
+          cinemaList.push({
+            id: session.cinema,
+            name: session.cinema,
+            address: '',
+            city: session.city,
+            province: '',
+            lat: null,
+            lng: null,
+          });
+        }
+      }
+    }
+  }
+
+  const cinemaResults = cinemaList.map((c) => ({
     name: c.name,
     city: c.city,
     slug: cinemaSlug(c.name),
