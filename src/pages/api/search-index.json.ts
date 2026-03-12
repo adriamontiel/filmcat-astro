@@ -6,7 +6,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { fetchFilms, fetchCinemas } from '../../lib/filmcat';
 import { fetchTMDBPoster } from '../../lib/tmdb';
-import { cinemaSlug } from '../../lib/slug';
+import { slugify, cinemaSlug } from '../../lib/slug';
 
 export const GET: APIRoute = async () => {
   const [filmData, cinemasFromApi] = await Promise.all([fetchFilms(), fetchCinemas()]);
@@ -26,7 +26,7 @@ export const GET: APIRoute = async () => {
 
   const filmResults = films
     .map((f) => ({
-      id: f.id,
+      slug: slugify(f.title), // URL slug — same as /films/[id].astro uses
       title: f.title,
       posterPath: f.posterPath ?? null,
       cinemaCount: new Set(f.sessions.map((s) => s.cinema)).size,
@@ -35,7 +35,7 @@ export const GET: APIRoute = async () => {
     .sort((a, b) => b.cinemaCount - a.cinemaCount);
 
   const upcomingResults = comingSoon.map((f) => ({
-    id: f.id,
+    slug: slugify(f.title),
     title: f.title,
     posterPath: f.posterPath ?? null,
     cinemaCount: 0,

@@ -68,7 +68,7 @@
       !film.upcoming && film.cinemaCount > 0
         ? `<span class="search-result-meta">${film.cinemaCount} ${film.cinemaCount === 1 ? 'cinema' : 'cinemes'}</span>`
         : '';
-    return `<a href="/films/${sanitize(film.id)}" class="search-result" aria-selected="false" data-result-idx="${idx}">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
+    return `<a href="/films/${sanitize(film.slug)}" class="search-result" aria-selected="false" data-result-idx="${idx}">${thumb}<div class="search-result-info"><span class="search-result-title">${sanitize(film.title)}</span>${badge}${meta}</div></a>`;
   }
 
   function cinemaResultHTML(cinema, idx) {
