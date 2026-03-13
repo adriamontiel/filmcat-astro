@@ -9,7 +9,7 @@ import { z } from 'zod';
 export const SessionSchema = z.object({
   cinema: z.string().default(''),
   city: z.string().default(''),
-  lang: z.string().default('VD'),
+  lang: z.string().default('VDC'),
   times: z.array(z.string()).default([]),
 });
 
@@ -20,7 +20,7 @@ export const RawFilmSchema = z.object({
   titleOriginal: z.string().optional().default(''),
   director: z.string().optional().default(''),
   synopsis: z.string().optional().default(''),
-  version: z.string().optional().default('VD'),
+  version: z.string().optional().default('VDC'),
   versionRaw: z.string().optional().default(''),
   language: z.string().optional().default(''),
   rating: z.string().optional().default(''),

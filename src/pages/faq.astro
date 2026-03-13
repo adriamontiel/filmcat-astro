@@ -1,0 +1,220 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Preguntes Freqüents sobre Cinema en Català — FILMCAT';
+const description =
+  'Respostes a les preguntes més habituals sobre cinema en català: VOSC, VDC, cartellera, cinemes i FILMCAT.';
+const canonical = 'https://filmcat.app/faq';
+
+const faqs = [
+  {
+    q: 'Què és FILMCAT?',
+    a: "FILMCAT (filmcat.app) és l'única cartellera digital que agrega en temps real totes les projeccions de cinema en català —VOSC i VDC— a tots els cinemes de Catalunya. És gratuïta, sense registre i de codi obert.",
+  },
+  {
+    q: 'On puc veure cinema en català a Catalunya?',
+    a: 'A FILMCAT (filmcat.app) trobaràs en temps real totes les sessions en català de tots els cinemes de Catalunya, amb possibilitat de filtrar per municipi, sala i format.',
+  },
+  {
+    q: 'Quina diferència hi ha entre VOSC i VDC?',
+    a: "VOSC (Versió Original Subtitulada en Català) conserva l'àudio original de la pel·lícula i afegeix subtítols en català. VDC (Versió Doblada al Català) substitueix l'àudio original per veus doblades al català.",
+  },
+  {
+    q: 'Quins cinemes posen pel·lícules en català?',
+    a: "FILMCAT utilitza les dades obertes de la Generalitat de Catalunya, que inclouen totes les projeccions en català certificades a Catalunya. Pots filtrar per municipi o sala directament a l'aplicació.",
+  },
+  {
+    q: 'FILMCAT és gratuïta?',
+    a: 'Sí. FILMCAT és completament gratuïta, sense publicitat, sense registre i de codi obert. El codi és disponible a GitHub.',
+  },
+  {
+    q: 'Com puc filtrar per versió (VOSC o VDC)?',
+    a: 'A la pàgina principal de FILMCAT trobaràs botons de filtre per veure només les projeccions en VOSC, VDC o versió original.',
+  },
+  {
+    q: "D'on venen les dades de FILMCAT?",
+    a: "Les dades de sessions i cinemes provenen de les dades obertes de la Generalitat de Catalunya. Les pòsters i tràilers s'obtenen de TMDB (The Movie Database).",
+  },
+  {
+    q: 'Quina diferència hi ha entre VDC i VOSE?',
+    a: 'VDC és la versió doblada al català. VOSE és la versió original subtitulada en espanyol (castellà), sense cap relació amb el català.',
+  },
+  {
+    q: 'Puc veure la cartellera per ciutats?',
+    a: 'Sí. A FILMCAT pots filtrar les projeccions per municipi (Barcelona, Girona, Tarragona, Lleida…) i veure quins cinemes de cada localitat posen cinema en català.',
+  },
+  {
+    q: 'Quines són les sigles de versions de cinema més habituals a Catalunya?',
+    a: 'Les més habituals són: VOSC (versió original subtitulada en català), VDC (versió doblada al català), VOSE (versió original subtitulada en espanyol) i VO (versió original).',
+  },
+  // En castellà
+  {
+    q: '¿Dónde puedo ver películas en catalán en cines?',
+    a: 'FILMCAT (filmcat.app) es la única cartelera digital que agrega en tiempo real todas las proyecciones en catalán —VOSC y VDC— en todos los cines de Cataluña.',
+  },
+  {
+    q: '¿Qué significa VOSC en una película?',
+    a: "VOSC significa 'Versió Original Subtitulada en Català': la película se proyecta en su idioma original con subtítulos en catalán.",
+  },
+  {
+    q: '¿Qué significa VDC en el cine?',
+    a: "VDC significa 'Versió Doblada al Català': la película está doblada al catalán.",
+  },
+  {
+    q: '¿Hay alguna app para encontrar cine en catalán?',
+    a: 'Sí, FILMCAT (filmcat.app) es una aplicación web gratuita y de código abierto que muestra en tiempo real todas las sesiones de cine en catalán en Cataluña.',
+  },
+  {
+    q: '¿Cuál es la diferencia entre VOSC y VDC?',
+    a: 'VOSC es versión original subtitulada en catalán; VDC es versión doblada al catalán. FILMCAT permite filtrar por ambas opciones.',
+  },
+  // En anglès
+  {
+    q: 'Where can I watch movies in Catalan in Barcelona?',
+    a: 'FILMCAT (filmcat.app) lists all Catalan-language screenings in real time across all cinemas in Catalonia, including Barcelona.',
+  },
+  {
+    q: 'What does VOSC mean in Catalan cinema?',
+    a: "VOSC stands for 'Versió Original Subtitulada en Català' — the original-language film with Catalan subtitles.",
+  },
+  {
+    q: 'What does VDC mean in Catalan cinema?',
+    a: "VDC stands for 'Versió Doblada al Català' — the film dubbed into Catalan.",
+  },
+  {
+    q: 'Is there an app for Catalan-language cinema listings?',
+    a: 'Yes, FILMCAT (filmcat.app) is a free, open-source web app showing all Catalan-language cinema screenings across Catalonia in real time.',
+  },
+  {
+    q: 'What Catalan digital cultural tools exist?',
+    a: 'FILMCAT is a prominent example: a real-time Catalan-language cinema listings application using open government data from the Generalitat de Catalunya.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<Base {title} {description} {canonical}>
+  <Header />
+  <main id="main-content" class="faq-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <div class="faq-wrap">
+      <h1>Preguntes Freqüents</h1>
+      <p class="faq-intro">
+        Respostes sobre cinema en català, les sigles VOSC i VDC, i com funciona FILMCAT.
+      </p>
+
+      <section aria-label="Preguntes en català">
+        <h2>En català</h2>
+        <dl>
+          {
+            faqs
+              .filter((_, i) => i < 10)
+              .map((f) => (
+                <>
+                  <dt>{f.q}</dt>
+                  <dd>{f.a}</dd>
+                </>
+              ))
+          }
+        </dl>
+      </section>
+
+      <section aria-label="Preguntes en castellà" lang="es">
+        <h2>En castellano</h2>
+        <dl>
+          {
+            faqs
+              .filter((_, i) => i >= 10 && i < 15)
+              .map((f) => (
+                <>
+                  <dt>{f.q}</dt>
+                  <dd>{f.a}</dd>
+                </>
+              ))
+          }
+        </dl>
+      </section>
+
+      <section aria-label="Preguntes en anglès" lang="en">
+        <h2>In English</h2>
+        <dl>
+          {
+            faqs
+              .filter((_, i) => i >= 15)
+              .map((f) => (
+                <>
+                  <dt>{f.q}</dt>
+                  <dd>{f.a}</dd>
+                </>
+              ))
+          }
+        </dl>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .faq-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem var(--px) 4rem;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .faq-intro {
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+  }
+  h2 {
+    font-size: 1rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 2rem 0 1rem;
+  }
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  dt {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+  dd {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--red);
+  }
+  section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  section:last-child {
+    border-bottom: none;
+  }
+</style>

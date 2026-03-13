@@ -33,14 +33,21 @@ const {
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="geolocation=(), camera=(), microphone=()" />
+    <!-- Idioma i hreflang -->
+    <meta http-equiv="Content-Language" content="ca" />
+    <link rel="alternate" hreflang="ca" href={canonical || 'https://filmcat.app/'} />
+    <link rel="alternate" hreflang="x-default" href="https://filmcat.app/" />
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ca_ES" />
-    <meta property="og:url" content={canonical || 'https://filmcat.cat/'} />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:url" content={canonical || 'https://filmcat.app/'} />
+    <meta property="og:site_name" content="FILMCAT" />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@filmcatapp" />
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

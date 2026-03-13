@@ -1,7 +1,7 @@
 export interface Session {
   cinema: string;
   city: string;
-  lang: 'VD' | 'VO' | 'VOSC' | string;
+  lang: 'VDC' | 'VO' | 'VOSC' | string;
   times: string[];
 }
 
@@ -11,7 +11,7 @@ export interface Film {
   titleOriginal: string;
   director: string;
   synopsis: string;
-  version: 'VD' | 'VO' | 'VOSC' | string;
+  version: 'VDC' | 'VO' | 'VOSC' | string;
   versionRaw?: string;
   language?: string;
   rating?: string;

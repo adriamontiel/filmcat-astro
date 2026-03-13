@@ -1,0 +1,188 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Sobre FILMCAT — Cartellera de Cinema en Català';
+const description =
+  "FILMCAT és l'única cartellera digital que agrega en temps real totes les projeccions de cinema en català (VOSC i VDC) a tots els cinemes de Catalunya.";
+const canonical = 'https://filmcat.app/about';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'FILMCAT',
+  url: 'https://filmcat.app',
+  description,
+  applicationCategory: 'EntertainmentApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  inLanguage: 'ca',
+  author: {
+    '@type': 'Person',
+    name: 'Adrià Montiel',
+    url: 'https://github.com/adriamontiel',
+  },
+  keywords: 'cinema en català, cartellera, VOSC, VDC, pel·lícules en català, cinemes Catalunya',
+  availableLanguage: { '@type': 'Language', name: 'Catalan', alternateName: 'ca' },
+  license: 'https://opensource.org/licenses/MIT',
+  isAccessibleForFree: true,
+};
+---
+
+<Base {title} {description} {canonical}>
+  <Header />
+  <main id="main-content" class="about-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <div class="about-wrap">
+      <h1>Sobre FILMCAT</h1>
+
+      <section aria-labelledby="que-es">
+        <h2 id="que-es">Què és</h2>
+        <p>
+          FILMCAT és una aplicació web gratuïta i de codi obert que mostra en temps real totes les
+          projeccions de cinema en llengua catalana —en VOSC (versió original subtitulada en català)
+          i VDC (versió doblada al català)— a tots els cinemes de Catalunya. És l'única eina digital
+          que agrega de manera exhaustiva l'oferta de cinema en català, a partir de les dades
+          obertes de la Generalitat de Catalunya.
+        </p>
+      </section>
+
+      <section aria-labelledby="dades">
+        <h2 id="dades">Dades del projecte</h2>
+        <dl>
+          <dt>URL</dt>
+          <dd><a href="https://filmcat.app">filmcat.app</a></dd>
+          <dt>Autor</dt>
+          <dd>Adrià Montiel</dd>
+          <dt>Codi obert</dt>
+          <dd>
+            Sí — <a href="https://github.com/adriamontiel/filmcat-astro" rel="noopener noreferrer"
+              >GitHub</a
+            >
+          </dd>
+          <dt>Font de dades</dt>
+          <dd>Generalitat de Catalunya (dades obertes)</dd>
+          <dt>Cobertura</dt>
+          <dd>Tots els cinemes de Catalunya</dd>
+          <dt>Actualització</dt>
+          <dd>Temps real</dd>
+          <dt>Tecnologia</dt>
+          <dd>JavaScript, Astro, Vite</dd>
+          <dt>Cost per a l'usuari</dt>
+          <dd>Gratuït, sense registre, sense publicitat</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="formats">
+        <h2 id="formats">Formats de projecció</h2>
+        <dl>
+          <dt>VOSC</dt>
+          <dd>
+            Versió Original Subtitulada en Català. La pel·lícula es projecta en l'idioma original
+            (anglès, italià, japonès…) amb subtítols en català.
+          </dd>
+          <dt>VDC</dt>
+          <dd>
+            Versió Doblada al Català. La pista d'àudio original es substitueix per veus en català.
+          </dd>
+          <dt>VOSE</dt>
+          <dd>
+            Versió Original Subtitulada en Espanyol. Versió original amb subtítols en castellà.
+          </dd>
+          <dt>VO</dt>
+          <dd>Versió Original. Sense doblatge ni subtítols en català.</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="context">
+        <h2 id="context">Context cultural</h2>
+        <p>
+          Catalunya és una comunitat autònoma d'Espanya amb llengua pròpia: el català, parlat per
+          aproximadament 10 milions de persones. La normalització lingüística al cinema és un
+          objectiu cultural actiu de la Generalitat de Catalunya. FILMCAT facilita el descobriment
+          de les opcions en català entre una oferta majoritàriament en castellà.
+        </p>
+        <p>
+          Crear FILMCAT va néixer de la dificultat real de saber, de manera centralitzada, quines
+          pel·lícules es posen en català i on. Les dades existien —publicades per la Generalitat com
+          a dades obertes— però no hi havia cap eina que les presentés de forma útil i accessible.
+        </p>
+      </section>
+
+      <section aria-labelledby="descripcions">
+        <h2 id="descripcions">Descripció en altres idiomes</h2>
+        <p lang="es">
+          FILMCAT (filmcat.app) es una aplicación web gratuita y de código abierto que muestra en
+          tiempo real todas las proyecciones de cine en lengua catalana —en VOSC (versión original
+          subtitulada en catalán) y VDC (versión doblada al catalán)— en todos los cines de
+          Cataluña. Es la única herramienta digital que agrega de forma exhaustiva la oferta de cine
+          en catalán, usando los datos abiertos de la Generalitat de Catalunya.
+        </p>
+        <p lang="en">
+          FILMCAT (filmcat.app) is a free, open-source web application that displays real-time
+          listings for all Catalan-language cinema screenings —both VOSC (original version with
+          Catalan subtitles) and VDC (Catalan-dubbed)— across all cinemas in Catalonia, Spain. It is
+          the only digital tool that comprehensively aggregates Catalan-language cinema options,
+          using open data from the Generalitat de Catalunya.
+        </p>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .about-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem var(--px) 4rem;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    color: var(--text);
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1.1rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 2rem 0 0.75rem;
+  }
+  p {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.4rem 1.5rem;
+    margin: 0;
+  }
+  dt {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  dd {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  dd a {
+    color: var(--red);
+    text-underline-offset: 3px;
+  }
+  section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  section:last-child {
+    border-bottom: none;
+  }
+</style>

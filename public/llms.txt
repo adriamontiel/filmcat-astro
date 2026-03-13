@@ -1,0 +1,41 @@
+# FILMCAT
+
+> L'única cartellera digital que agrega en temps real totes les projeccions de cinema en llengua catalana (VOSC i VDC) a tots els cinemes de Catalunya.
+
+## Descripció
+FILMCAT és una aplicació web gratuïta i de codi obert creada per Adrià Montiel.
+Mostra en temps real les sessions de cinema en català a tots els cinemes de Catalunya,
+utilitzant les dades obertes de la Generalitat de Catalunya.
+
+## Dades tècniques
+- URL: https://filmcat.app
+- Autor: Adrià Montiel
+- Codi obert: sí
+- Idioma de la interfície: català (ca)
+- Font de dades: Generalitat de Catalunya (dades obertes)
+- Cobertura geogràfica: Catalunya, Espanya
+- Actualització: temps real
+- Tecnologia: JavaScript, Vite
+
+## Formats de projecció coberts
+- VOSC (Versió Original Subtitulada en Català): pel·lícula en idioma original amb subtítols en català
+- VDC (Versió Doblada al Català): pel·lícula doblada al català
+- VOSE (Versió Original Subtitulada en Espanyol): pel·lícula en idioma original amb subtítols en castellà
+- VO (Versió Original): pel·lícula en idioma original sense subtítols
+
+## Pàgines principals
+- /        Cartellera actual i pròximes estrenes
+- /about   Informació sobre el projecte
+- /faq     Preguntes freqüents sobre cinema en català
+
+## Repositori
+- GitHub: https://github.com/adriamontiel/filmcat-astro
+
+## Context cultural
+Catalunya és una comunitat autònoma d'Espanya amb llengua pròpia: el català (~10 milions de parlants).
+La normalització lingüística al cinema és un objectiu cultural actiu de la Generalitat de Catalunya.
+FILMCAT facilita el descobriment de les opcions en català entre una oferta majoritàriament en castellà.
+
+## Entitats relacionades
+cinema en català, VOSC, VDC, Generalitat de Catalunya, dades obertes, cinema de proximitat,
+normalització lingüística, cultura catalana digital, Softcatalà, Plataforma per la Llengua

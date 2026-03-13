@@ -50,7 +50,8 @@ function premiereCompact(raw: string | undefined): string | null {
 const premiereLabel = isUpcoming ? premiereCompact(film.premiere) : null;
 
 const VERSION_LABELS: Record<string, string> = {
-  VD: 'Versió Doblada',
+  VDC: 'Versió Doblada al Català',
+  VD: 'Versió Doblada al Català', // legacy alias
   VO: 'Versió Original',
   VOSC: 'Versió Original Subtitulada en Català',
   VOSE: 'Versió Original Subtitulada en Espanyol',

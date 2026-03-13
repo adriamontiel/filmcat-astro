@@ -10,17 +10,23 @@ import {
 const API_URL = 'https://filmcat-api.vercel.app';
 
 const COLORS: Record<string, [string, string]> = {
-  VD: ['#0a0a1a', '#1a1535'],
+  VDC: ['#0a0a1a', '#1a1535'],
+  VD: ['#0a0a1a', '#1a1535'], // legacy alias — API may still return 'VD'
   VO: ['#0a1a0a', '#0d3a1a'],
   VOSC: ['#1a0a0a', '#3a0d0d'],
 };
+
+/** Normalitza les sigles que retorna l'API a la terminologia oficial */
+function normalizeVersion(v: string): string {
+  return v === 'VD' ? 'VDC' : v;
+}
 
 export function mapFilm(raw: Record<string, unknown>, id: number): Film {
   // Validate + coerce with Zod — invalid or missing fields get safe defaults
   const f = RawFilmSchema.parse(raw);
 
-  const version = f.version || 'VD';
-  const [color1, color2] = COLORS[version] || COLORS['VD'];
+  const version = normalizeVersion(f.version || 'VDC');
+  const [color1, color2] = COLORS[version] || COLORS['VDC'];
 
   const titleOriginal = f.titleOriginal || '';
   const title = f.title || 'Sense títol';
@@ -50,7 +56,7 @@ export function mapFilm(raw: Record<string, unknown>, id: number): Film {
       return {
         cinema: String(safe.cinema || ''),
         city: String(safe.city || ''),
-        lang: String(safe.lang || version || 'VD'),
+        lang: normalizeVersion(String(safe.lang || version || 'VDC')),
         times: ((safe.times as string[]) || []).slice(0, 7),
       };
     });
@@ -88,7 +94,7 @@ const FALLBACK_FILMS: Film[] = [
     titleOriginal: 'Balandrau, Vent Salvatge',
     director: '',
     synopsis: "Un grup de muntanyencs s'enfronta a una tempesta als Pirineus.",
-    version: 'VD',
+    version: 'VDC',
     year: 2026,
     searchTitle: 'Balandrau Vent Salvatge',
     genre: 'Aventura',
@@ -98,7 +104,7 @@ const FALLBACK_FILMS: Film[] = [
     posterPath: null,
     backdropPath: null,
     _trailerKey: null,
-    sessions: [{ cinema: 'Cinemes Verdi', city: 'Barcelona', lang: 'VD', times: ['Avui'] }],
+    sessions: [{ cinema: 'Cinemes Verdi', city: 'Barcelona', lang: 'VDC', times: ['Avui'] }],
   },
   {
     id: '2',
@@ -106,7 +112,7 @@ const FALLBACK_FILMS: Film[] = [
     titleOriginal: 'Zootopia 2',
     director: '',
     synopsis: 'La Judy Hopps i el Nick Wilde tornen amb una nova aventura.',
-    version: 'VD',
+    version: 'VDC',
     year: 2025,
     searchTitle: 'Zootopia 2',
     genre: 'Animació',
@@ -116,7 +122,7 @@ const FALLBACK_FILMS: Film[] = [
     posterPath: null,
     backdropPath: null,
     _trailerKey: null,
-    sessions: [{ cinema: 'Cinesa Diagonal Mar', city: 'Barcelona', lang: 'VD', times: ['Avui'] }],
+    sessions: [{ cinema: 'Cinesa Diagonal Mar', city: 'Barcelona', lang: 'VDC', times: ['Avui'] }],
   },
 ];
 
