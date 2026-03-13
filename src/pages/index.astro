@@ -36,7 +36,7 @@ const comingSoon = [...rawFilms.filter((f) => f.sessions.length === 0), ...rawCo
 // ── TMDB posters (server-side, API key stays private) ──
 await Promise.allSettled(
   [...films, ...comingSoon].map(async (film) => {
-    const result = await fetchTMDBPoster(film.searchTitle, film.year);
+    const result = await fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal);
     if (result) {
       film.posterPath = result.posterPath;
       film.backdropPath = result.backdropPath;

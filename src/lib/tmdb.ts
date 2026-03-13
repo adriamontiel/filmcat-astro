@@ -66,53 +66,87 @@ export function getCacheSize(): number {
 }
 
 // ── Fetch with cache ─────────────────────────────────────────────────────────
-export async function fetchTMDBPoster(
-  searchTitle: string,
-  year: number
-): Promise<TMDBResult | null> {
-  if (!TMDB_KEY) return null;
 
-  // 1. Cache hit
-  const cached = getCachedPoster(searchTitle, year);
-  if (cached !== undefined) return cached;
-
-  // 2. Cache miss → call TMDB
+/** Raw TMDB HTTP call — no caching. Returns null on miss, error or bad key. */
+async function _callTMDB(title: string, year: number): Promise<TMDBResult | null> {
   try {
     const r = await fetch(
-      `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(searchTitle)}&include_adult=false`,
+      `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(title)}&include_adult=false`,
       { signal: AbortSignal.timeout(6000) }
     );
-    if (!r.ok) {
-      setCachedPoster(searchTitle, year, null);
-      return null;
-    }
-    const data = await r.json();
+    if (!r.ok) return null;
 
+    const data = await r.json();
     const match = (data.results as Array<Record<string, unknown>>)?.find((m) => {
       if (!m.release_date) return false;
       const resultYear = parseInt((m.release_date as string).slice(0, 4));
       return Math.abs(resultYear - year) <= 1 && m.poster_path;
     });
+    if (!match) return null;
 
-    if (!match) {
-      setCachedPoster(searchTitle, year, null);
-      return null;
-    }
-
-    const result: TMDBResult = {
+    return {
       posterPath: PATH_RE.test(match.poster_path as string) ? (match.poster_path as string) : null,
       backdropPath: PATH_RE.test(match.backdrop_path as string)
         ? (match.backdrop_path as string)
         : null,
       tmdbId: match.id as number,
     };
-
-    setCachedPoster(searchTitle, year, result);
-    return result;
   } catch {
-    setCachedPoster(searchTitle, year, null);
     return null;
   }
+}
+
+/**
+ * Fetch TMDB poster for a film, with optional fallback to the original title.
+ *
+ * Strategy:
+ *  1. Check cache for `searchTitle` (Catalan / display title).
+ *  2. On miss, call TMDB with `searchTitle`.
+ *  3. If TMDB returns nothing AND `fallbackTitle` differs, try TMDB again with
+ *     the original title (e.g. English/French/etc.).
+ *  4. Cache the winning result under **both** keys so future lookups are instant.
+ */
+export async function fetchTMDBPoster(
+  searchTitle: string,
+  year: number,
+  fallbackTitle?: string
+): Promise<TMDBResult | null> {
+  if (!TMDB_KEY) return null;
+
+  // 1. Cache hit for primary title
+  const cached = getCachedPoster(searchTitle, year);
+  if (cached !== undefined) return cached;
+
+  // 2. Cache miss → try TMDB with the primary (Catalan) title
+  const primaryResult = await _callTMDB(searchTitle, year);
+  if (primaryResult !== null) {
+    setCachedPoster(searchTitle, year, primaryResult);
+    return primaryResult;
+  }
+
+  // 3. Primary returned nothing — try the original title if it differs
+  const normalFallback = fallbackTitle?.trim().toLowerCase();
+  const normalPrimary = searchTitle.trim().toLowerCase();
+
+  if (normalFallback && normalFallback !== normalPrimary) {
+    // Check fallback cache first (may have been stored by a previous request)
+    const cachedFallback = getCachedPoster(fallbackTitle!, year);
+    if (cachedFallback !== undefined) {
+      // Promote result to the primary key so we skip this two-step next time
+      setCachedPoster(searchTitle, year, cachedFallback);
+      return cachedFallback;
+    }
+
+    const fallbackResult = await _callTMDB(fallbackTitle!, year);
+    // Cache under both keys — primary miss is now resolved via the original title
+    setCachedPoster(fallbackTitle!, year, fallbackResult);
+    setCachedPoster(searchTitle, year, fallbackResult);
+    return fallbackResult;
+  }
+
+  // No usable fallback — cache the miss so we don't hammer TMDB again
+  setCachedPoster(searchTitle, year, null);
+  return null;
 }
 
 export const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';

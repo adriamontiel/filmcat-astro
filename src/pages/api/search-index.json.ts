@@ -19,7 +19,7 @@ export const GET: APIRoute = async () => {
   // Enrich with TMDB poster paths (same as index.astro)
   await Promise.allSettled(
     [...films, ...comingSoon].map(async (film) => {
-      const result = await fetchTMDBPoster(film.searchTitle, film.year);
+      const result = await fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal);
       if (result) film.posterPath = result.posterPath;
     })
   );

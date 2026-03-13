@@ -46,7 +46,7 @@ const cinemaFilms = films
 // ── TMDB posters for these films ──
 await Promise.allSettled(
   cinemaFilms.map(async (film) => {
-    const result = await fetchTMDBPoster(film.searchTitle, film.year);
+    const result = await fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal);
     if (result) {
       film.posterPath = result.posterPath;
       film.backdropPath = result.backdropPath;

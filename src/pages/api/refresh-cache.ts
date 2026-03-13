@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ request }) => {
   // ── Warm TMDB cache for every film ───────────────────────────────────────
   const allFilms = [...films, ...comingSoon];
   const results = await Promise.allSettled(
-    allFilms.map((film) => fetchTMDBPoster(film.searchTitle, film.year))
+    allFilms.map((film) => fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal))
   );
 
   const hits = results.filter((r) => r.status === 'fulfilled' && r.value !== null).length;
