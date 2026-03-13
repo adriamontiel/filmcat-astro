@@ -7,6 +7,7 @@ interface Props {
   description?: string;
   ogImage?: string | null;
   canonical?: string | null;
+  twitterCreator?: string | null;
 }
 
 const {
@@ -14,6 +15,7 @@ const {
   description = 'FILMCAT — Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes actualitzats setmanalment.',
   ogImage = null,
   canonical = null,
+  twitterCreator = null,
 } = Astro.props;
 ---
 
@@ -48,6 +50,7 @@ const {
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@filmcatapp" />
+    {twitterCreator && <meta name="twitter:creator" content={twitterCreator} />}
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -1554,7 +1557,7 @@ const {
         font-family: 'Space Mono', monospace;
         font-size: 0.65rem;
         letter-spacing: 4px;
-        color: var(--red-light);
+        color: var(--red-focus); /* #ff6b5b — 7.16:1 on --bg, passes WCAG AA */
         text-transform: uppercase;
         display: flex;
         align-items: center;

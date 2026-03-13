@@ -166,7 +166,8 @@ export async function fetchFilms(): Promise<{
     // Zod validates the top-level response shape
     const result = CartellerapiResponseSchema.safeParse(raw);
     if (!result.success) {
-      console.warn('[filmcat] API response shape invalid:', result.error.flatten().fieldErrors);
+      if (import.meta.env.DEV)
+        console.warn('[filmcat] API response shape invalid:', result.error.flatten().fieldErrors);
       throw new Error('API schema mismatch — Gencat may have changed format');
     }
     const data = result.data;
@@ -178,7 +179,7 @@ export async function fetchFilms(): Promise<{
       isOffline: false,
     };
   } catch (e) {
-    console.warn('[filmcat] Usant dades de mostra:', (e as Error).message);
+    if (import.meta.env.DEV) console.warn('[filmcat] Usant dades de mostra:', (e as Error).message);
     return { films: FALLBACK_FILMS, comingSoon: [], isOffline: true };
   }
 }
@@ -195,7 +196,8 @@ export async function fetchCinemas(): Promise<Cinema[]> {
     // Zod validates the cinemas response shape
     const result = CinemasApiResponseSchema.safeParse(raw);
     if (!result.success) {
-      console.warn('[filmcat] Cinemes API shape invalid:', result.error.flatten().fieldErrors);
+      if (import.meta.env.DEV)
+        console.warn('[filmcat] Cinemes API shape invalid:', result.error.flatten().fieldErrors);
       return [];
     }
     const data = result.data;
@@ -214,7 +216,7 @@ export async function fetchCinemas(): Promise<Cinema[]> {
       };
     });
   } catch (e) {
-    console.warn('[filmcat] fetchCinemas error:', (e as Error).message);
+    if (import.meta.env.DEV) console.warn('[filmcat] fetchCinemas error:', (e as Error).message);
     return [];
   }
 }
