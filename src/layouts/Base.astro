@@ -545,6 +545,12 @@ const {
         color: var(--text);
         border-color: var(--red);
       }
+      .nav-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
       .hamburger {
         display: none;
         background: none;
@@ -589,6 +595,21 @@ const {
         letter-spacing: 3px;
         padding: 0.875rem 0;
         border-bottom: 1px solid var(--border);
+      }
+      .mobile-nav-sep {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0.5rem 0;
+        opacity: 0.5;
+      }
+      .mobile-nav .mobile-nav-secondary {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        color: var(--muted);
+        padding: 0.6rem 0;
+      }
+      .mobile-nav .mobile-nav-secondary:hover {
+        color: var(--text);
       }
       /* ── HERO ── */
       .hero {
