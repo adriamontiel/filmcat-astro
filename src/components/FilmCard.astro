@@ -2,7 +2,7 @@
 // FilmCard.astro — film card linking to /films/[slug]
 // data-film kept for JS modal fallback; data-version for filter bar
 import type { Film } from '../lib/types';
-import { TMDB_IMG } from '../lib/tmdb';
+import { TMDB_185, TMDB_342, TMDB_IMG } from '../lib/tmdb';
 import { slugify } from '../lib/slug';
 import { cityToProvince } from '../lib/provinces';
 import { ratingInfo } from '../lib/rating';
@@ -17,8 +17,13 @@ const isUpcoming = film.sessions.length === 0;
 const slug = slugify(film.title);
 const href = `/films/${slug}`;
 
-// Poster URL (server-side resolved)
+// Poster URL + responsive srcset (server-side resolved)
+// TMDB serves the same image at w185 / w342 / w500 — browser picks the
+// best fit for the device DPR and layout width (215 px on desktop).
 const posterSrc = film.posterPath ? `${TMDB_IMG}${film.posterPath}` : null;
+const posterSrcset = film.posterPath
+  ? `${TMDB_185}${film.posterPath} 185w, ${TMDB_342}${film.posterPath} 342w, ${TMDB_IMG}${film.posterPath} 500w`
+  : null;
 
 // Abbreviation for placeholder
 const abbr = film.title
@@ -104,6 +109,8 @@ const filmJson = JSON.stringify({
       posterSrc ? (
         <img
           src={posterSrc}
+          srcset={posterSrcset ?? undefined}
+          sizes="(max-width: 480px) 160px, 215px"
           alt={`Pòster oficial de ${film.title}`}
           loading="lazy"
           decoding="async"

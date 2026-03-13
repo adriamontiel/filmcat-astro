@@ -1,14 +1,30 @@
-// tmdb.ts — server-side TMDB poster fetch with in-process cache.
+// tmdb.ts — server-side TMDB poster fetch with two-level cache.
 //
-// WHY A CACHE?
-// Each page request previously called TMDB once per film (~10-20 calls),
-// adding 3-8 s of latency. With the cache:
-//   • Warm serverless instance: cache hit → 0 TMDB calls → ~200 ms page load
-//   • Cold start: cache miss → TMDB calls → results stored for next request
+// CACHE ARCHITECTURE
+// ──────────────────
+// L1 — In-process Map (module scope)
+//   • Persists across requests on the same warm serverless instance.
+//   • Zero-latency reads; lost on cold starts.
 //
-// The Vercel cron job (/api/refresh-cache) pre-warms the cache every Thursday
-// so that the first real visitor after a weekly content update still gets a fast
-// response. TTL is 8 hours (well within the 7-day s-maxage CDN cache).
+// L2 — Vercel KV (Redis)
+//   • Persists across ALL instances and cold starts.
+//   • Requires KV_REST_API_URL + KV_REST_API_TOKEN env vars (set
+//     automatically when you link a KV database in the Vercel dashboard).
+//   • Gracefully disabled when env vars are absent (local dev, or if KV
+//     is not yet provisioned).
+//   • Non-fatal: any KV error falls through to a TMDB API call.
+//
+// FETCH STRATEGY (fetchTMDBPoster)
+// ─────────────────────────────────
+//   1. L1 hit → return immediately (0 ms)
+//   2. L2 hit → populate L1, return (~5–15 ms, no TMDB call)
+//   3. TMDB call → store in both L1 and L2
+//
+// The Vercel cron job (/api/refresh-cache) pre-warms KV every Thursday
+// so cold starts after a weekly data update still get a fast response.
+// TTL is 8 hours (well within the 7-day s-maxage CDN cache).
+
+import { kv } from '@vercel/kv';
 
 const TMDB_KEY = import.meta.env.TMDB_KEY;
 const PATH_RE = /^\/[a-zA-Z0-9_-]+\.(jpg|png|webp)$/;
@@ -24,15 +40,11 @@ export interface TMDBDetails {
   genres: string[];
 }
 
-// ── In-process cache ─────────────────────────────────────────────────────────
-// Key: `${searchTitle}__${year}`
-// Value: { result, expiresAt }
-// Note: this cache lives in the Node.js module scope — it persists across
-// requests within the same serverless function instance (Vercel reuses warm
-// instances for subsequent requests). Cross-instance persistence requires
-// Vercel KV, which can be added later without changing this interface.
+// ── L1: In-process cache ──────────────────────────────────────────────────────
+// Key: `${searchTitle}__${year}`   Value: { result, expiresAt }
 
 const TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+const TTL_SEC = 8 * 60 * 60; // same, in seconds (for KV ex option)
 
 interface CacheEntry {
   result: TMDBResult | null;
@@ -49,23 +61,53 @@ export function getCachedPoster(title: string, year: number): TMDBResult | null 
   const entry = _cache.get(cacheKey(title, year));
   if (!entry) return undefined; // miss
   if (Date.now() > entry.expiresAt) {
-    // expired
     _cache.delete(cacheKey(title, year));
-    return undefined;
+    return undefined; // expired
   }
-  return entry.result; // hit (may be null = "not found")
+  return entry.result; // hit (may be null = "not found on TMDB")
 }
 
 export function setCachedPoster(title: string, year: number, result: TMDBResult | null): void {
   _cache.set(cacheKey(title, year), { result, expiresAt: Date.now() + TTL_MS });
 }
 
-/** Returns current cache size — used by the /api/refresh-cache health endpoint */
+/** Returns current L1 cache size — used by the /api/refresh-cache health endpoint */
 export function getCacheSize(): number {
   return _cache.size;
 }
 
-// ── Fetch with cache ─────────────────────────────────────────────────────────
+// ── L2: Vercel KV helpers ─────────────────────────────────────────────────────
+// KV stores { v: TMDBResult | null } to distinguish a key miss (kv.get → null)
+// from a stored "TMDB returned nothing" entry ({ v: null }).
+
+interface KVEntry {
+  v: TMDBResult | null;
+}
+
+// KV is enabled only when the required env vars are present.
+// @vercel/kv throws if called without them, so we guard every call.
+const KV_ENABLED = !!(import.meta.env.KV_REST_API_URL && import.meta.env.KV_REST_API_TOKEN);
+
+async function kvGet(key: string): Promise<TMDBResult | null | undefined> {
+  if (!KV_ENABLED) return undefined;
+  try {
+    const entry = await kv.get<KVEntry>(`tmdb:${key}`);
+    return entry == null ? undefined : entry.v; // null → miss, {v:…} → hit
+  } catch {
+    return undefined; // KV failure is non-fatal
+  }
+}
+
+async function kvSet(key: string, val: TMDBResult | null): Promise<void> {
+  if (!KV_ENABLED) return;
+  try {
+    await kv.set<KVEntry>(`tmdb:${key}`, { v: val }, { ex: TTL_SEC });
+  } catch {
+    // KV failure is non-fatal — L1 and future TMDB calls are the fallback
+  }
+}
+
+// ── Raw TMDB HTTP call ────────────────────────────────────────────────────────
 
 /** Raw TMDB HTTP call — no caching. Returns null on miss, error or bad key. */
 async function _callTMDB(title: string, year: number): Promise<TMDBResult | null> {
@@ -96,15 +138,18 @@ async function _callTMDB(title: string, year: number): Promise<TMDBResult | null
   }
 }
 
+// ── fetchTMDBPoster (L1 → L2 → TMDB) ────────────────────────────────────────
+
 /**
  * Fetch TMDB poster for a film, with optional fallback to the original title.
  *
  * Strategy:
- *  1. Check cache for `searchTitle` (Catalan / display title).
- *  2. On miss, call TMDB with `searchTitle`.
- *  3. If TMDB returns nothing AND `fallbackTitle` differs, try TMDB again with
+ *  1. L1 (in-process) hit for `searchTitle` → return immediately.
+ *  2. L2 (KV) hit for `searchTitle` → populate L1, return.
+ *  3. TMDB call with `searchTitle`.
+ *  4. On TMDB miss AND `fallbackTitle` differs: repeat steps 1-2-3 for
  *     the original title (e.g. English/French/etc.).
- *  4. Cache the winning result under **both** keys so future lookups are instant.
+ *  5. Store winning result in both L1 and L2 under all tried keys.
  */
 export async function fetchTMDBPoster(
   searchTitle: string,
@@ -113,42 +158,67 @@ export async function fetchTMDBPoster(
 ): Promise<TMDBResult | null> {
   if (!TMDB_KEY) return null;
 
-  // 1. Cache hit for primary title
-  const cached = getCachedPoster(searchTitle, year);
-  if (cached !== undefined) return cached;
+  const primaryKey = cacheKey(searchTitle, year);
 
-  // 2. Cache miss → try TMDB with the primary (Catalan) title
+  // 1. L1 hit
+  const l1 = getCachedPoster(searchTitle, year);
+  if (l1 !== undefined) return l1;
+
+  // 2. L2 hit
+  const l2 = await kvGet(primaryKey);
+  if (l2 !== undefined) {
+    setCachedPoster(searchTitle, year, l2); // promote to L1
+    return l2;
+  }
+
+  // 3. TMDB call — primary title
   const primaryResult = await _callTMDB(searchTitle, year);
   if (primaryResult !== null) {
     setCachedPoster(searchTitle, year, primaryResult);
+    await kvSet(primaryKey, primaryResult);
     return primaryResult;
   }
 
-  // 3. Primary returned nothing — try the original title if it differs
+  // 4. Primary returned nothing — try the original title if it differs
   const normalFallback = fallbackTitle?.trim().toLowerCase();
   const normalPrimary = searchTitle.trim().toLowerCase();
 
   if (normalFallback && normalFallback !== normalPrimary) {
-    // Check fallback cache first (may have been stored by a previous request)
-    const cachedFallback = getCachedPoster(fallbackTitle!, year);
-    if (cachedFallback !== undefined) {
-      // Promote result to the primary key so we skip this two-step next time
-      setCachedPoster(searchTitle, year, cachedFallback);
-      return cachedFallback;
+    const fallbackKey = cacheKey(fallbackTitle!, year);
+
+    // L1 hit for fallback
+    const l1Fallback = getCachedPoster(fallbackTitle!, year);
+    if (l1Fallback !== undefined) {
+      setCachedPoster(searchTitle, year, l1Fallback);
+      return l1Fallback;
     }
 
+    // L2 hit for fallback
+    const l2Fallback = await kvGet(fallbackKey);
+    if (l2Fallback !== undefined) {
+      setCachedPoster(fallbackTitle!, year, l2Fallback);
+      setCachedPoster(searchTitle, year, l2Fallback);
+      return l2Fallback;
+    }
+
+    // TMDB call — fallback title
     const fallbackResult = await _callTMDB(fallbackTitle!, year);
-    // Cache under both keys — primary miss is now resolved via the original title
+    // Store under both keys so future lookups for either title are instant
     setCachedPoster(fallbackTitle!, year, fallbackResult);
     setCachedPoster(searchTitle, year, fallbackResult);
+    await kvSet(fallbackKey, fallbackResult);
+    await kvSet(primaryKey, fallbackResult);
     return fallbackResult;
   }
 
-  // No usable fallback — cache the miss so we don't hammer TMDB again
+  // No result — cache the miss so we don't hammer TMDB again
   setCachedPoster(searchTitle, year, null);
+  await kvSet(primaryKey, null);
   return null;
 }
 
+export const TMDB_185 = 'https://image.tmdb.org/t/p/w185';
+export const TMDB_342 = 'https://image.tmdb.org/t/p/w342';
 export const TMDB_IMG = 'https://image.tmdb.org/t/p/w500';
 export const TMDB_BIG = 'https://image.tmdb.org/t/p/w780';
 
