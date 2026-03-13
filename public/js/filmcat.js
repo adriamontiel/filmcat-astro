@@ -620,6 +620,11 @@
       });
 
       searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault(); // prevent Chrome from clearing the input before closing
+          closeSearch();
+          return;
+        }
         const items = searchResults?.querySelectorAll('.search-result') || [];
         if (e.key === 'ArrowDown') {
           e.preventDefault();
