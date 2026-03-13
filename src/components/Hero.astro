@@ -1,19 +1,23 @@
 ---
 // Hero.astro — big heading section with background effects
 interface Props {
-  filmCount:   number;
+  filmCount: number;
   cinemaCount: number;
   sessionCount: number;
 }
 const { filmCount, cinemaCount, sessionCount } = Astro.props;
 ---
+
 <section class="hero" aria-labelledby="hero-heading">
   <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-grid" aria-hidden="true"></div>
   <div class="hero-content fade-up" style="animation-delay:.15s">
     <p class="hero-eyebrow" aria-hidden="true">Cinema en català</p>
-    <h1 id="hero-heading">DESCOBREIX<br>EL CINEMA<br>EN <em>CATALÀ</em></h1>
-    <p class="hero-sub">Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes actualitzats cada dijous.</p>
+    <h1 id="hero-heading">DESCOBREIX<br />EL CINEMA<br />EN <em>CATALÀ</em></h1>
+    <p class="hero-sub">
+      Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes
+      actualitzats setmanalment.
+    </p>
     <div class="hero-stats" role="region" aria-label="Estadístiques">
       <div class="stat">
         <span class="stat-num">{filmCount}</span>
