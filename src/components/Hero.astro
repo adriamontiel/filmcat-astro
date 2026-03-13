@@ -12,24 +12,23 @@ const { filmCount, cinemaCount, sessionCount } = Astro.props;
   <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-grid" aria-hidden="true"></div>
   <div class="hero-content fade-up" style="animation-delay:.15s">
-    <p class="hero-eyebrow" aria-hidden="true">Cinema en català</p>
-    <h1 id="hero-heading">DESCOBREIX<br />EL CINEMA<br />EN <em>CATALÀ</em></h1>
-    <p class="hero-sub">
-      Totes les pel·lícules en català als cinemes de Catalunya. Horaris, sessions i cinemes
-      actualitzats setmanalment.
-    </p>
-    <div class="hero-stats" role="region" aria-label="Estadístiques">
-      <div class="stat">
-        <span class="stat-num">{filmCount}</span>
-        <span class="stat-label">Pel·lícules</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num">{cinemaCount}</span>
-        <span class="stat-label">Cinemes</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num">{sessionCount}</span>
-        <span class="stat-label">Sessions</span>
+    <h1 id="hero-heading">CINEMA EN <em>CATALÀ</em></h1>
+    <div class="hero-meta">
+      <p class="hero-sub">Totes les pel·lícules en català als cinemes de Catalunya.</p>
+      <div class="hero-stats" role="region" aria-label="Estadístiques">
+        <span class="stat"
+          ><span class="stat-num">{filmCount}</span>
+          <span class="stat-label">Pel·lícules</span></span
+        >
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat"
+          ><span class="stat-num">{cinemaCount}</span> <span class="stat-label">Cinemes</span></span
+        >
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat"
+          ><span class="stat-num">{sessionCount}</span>
+          <span class="stat-label">Sessions</span></span
+        >
       </div>
     </div>
   </div>

@@ -617,8 +617,13 @@ const {
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        padding: 5rem var(--px) clamp(1.75rem, 4vw, 2.75rem);
+        padding: calc(64px + 2rem) var(--px) clamp(1.25rem, 3vw, 1.75rem);
         overflow: hidden;
+      }
+      @media (max-width: 639px) {
+        .hero {
+          display: none;
+        }
       }
       .hero-bg {
         position: absolute;
@@ -660,43 +665,54 @@ const {
       }
       h1 {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(2.25rem, 6vw, 4.5rem);
-        line-height: 0.92;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        line-height: 1;
         letter-spacing: 2px;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
       }
       h1 em {
         color: var(--red-light);
         font-style: normal;
       }
+      .hero-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
       .hero-sub {
-        font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+        font-size: clamp(0.8rem, 1.5vw, 0.9rem);
         color: var(--text-mid);
         font-weight: 300;
-        max-width: 500px;
-        line-height: 1.6;
-        margin-bottom: 20px;
+        line-height: 1.4;
+        margin: 0;
+        flex-shrink: 0;
       }
       .hero-stats {
         display: flex;
-        gap: clamp(1rem, 3vw, 2rem);
+        align-items: baseline;
+        gap: 0.5rem;
         flex-wrap: wrap;
-        margin-top: 4px;
       }
       .stat {
         display: flex;
-        flex-direction: column;
-        gap: 3px;
+        align-items: baseline;
+        gap: 4px;
+      }
+      .stat-sep {
+        color: var(--muted);
+        font-size: 0.75rem;
       }
       .stat-num {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(1.625rem, 4vw, 2.125rem);
+        font-size: clamp(1rem, 2vw, 1.25rem);
         line-height: 1;
+        color: var(--text);
       }
       .stat-label {
         font-size: 0.65rem;
         color: var(--muted);
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
       }
       .scroll-hint {
@@ -1644,6 +1660,9 @@ const {
         }
         h1 {
           letter-spacing: 1px;
+        }
+        main {
+          padding-top: calc(64px + 1.25rem);
         }
         .scroll-hint {
           display: none;
