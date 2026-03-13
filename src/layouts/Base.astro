@@ -149,6 +149,7 @@ const {
         --px: clamp(16px, 4vw, 48px);
         --r-card: 12px;
         --r-modal: 20px;
+        --nav-h: 64px;
       }
       html {
         scroll-behavior: smooth;
@@ -1766,7 +1767,7 @@ const {
         display: flex;
         align-items: flex-end;
         gap: clamp(16px, 3vw, 28px);
-        padding: clamp(80px, 15vw, 140px) var(--px) clamp(24px, 4vw, 40px);
+        padding: calc(var(--nav-h) + clamp(40px, 7vw, 96px)) var(--px) clamp(24px, 4vw, 40px);
       }
       .film-poster {
         width: clamp(80px, 14vw, 120px);
@@ -1960,6 +1961,24 @@ const {
     </dialog>
 
     <script src="/js/filmcat.js" defer></script>
+    <script is:inline>
+      // Keep --nav-h in sync with the actual rendered header height so
+      // .film-hero-content padding always clears the fixed header, even
+      // when nav items wrap onto a second line at intermediate viewports.
+      (function () {
+        const root = document.documentElement;
+        const hdr = document.querySelector('header');
+        function setNavH() {
+          if (hdr) root.style.setProperty('--nav-h', hdr.offsetHeight + 'px');
+        }
+        setNavH();
+        let timer;
+        window.addEventListener('resize', function () {
+          clearTimeout(timer);
+          timer = setTimeout(setNavH, 60);
+        });
+      })();
+    </script>
     <Analytics />
   </body>
 </html>
