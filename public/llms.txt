@@ -32,7 +32,7 @@ utilitzant les dades obertes de la Generalitat de Catalunya.
 - GitHub: https://github.com/adriamontiel/filmcat-astro
 
 ## Context cultural
-Catalunya és una comunitat autònoma d'Espanya amb llengua pròpia: el català (~10 milions de parlants).
+Catalunya és un país amb llengua pròpia: el català (~10 milions de parlants).
 La normalització lingüística al cinema és un objectiu cultural actiu de la Generalitat de Catalunya.
 FILMCAT facilita el descobriment de les opcions en català entre una oferta majoritàriament en castellà.
 
