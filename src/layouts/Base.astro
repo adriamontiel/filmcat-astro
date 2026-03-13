@@ -761,7 +761,7 @@ const {
       }
       /* ── MAIN ── */
       main {
-        padding: 0 var(--px) 80px;
+        padding: 0 var(--px) clamp(1.5rem, 3vw, 2.5rem);
       }
       /* ── API ERROR BANNER ── */
       .api-error-banner {
@@ -1514,7 +1514,6 @@ const {
         position: relative;
         overflow: hidden;
         padding: clamp(3rem, 8vw, 5rem) var(--px) clamp(2.25rem, 5vw, 3.5rem);
-        margin-top: 3.75rem;
       }
       .footer-bg {
         position: absolute;
