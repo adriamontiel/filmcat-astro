@@ -369,16 +369,39 @@
           card.style.display = 'none';
         }
       });
+
+      // ── Live region: announce result count to screen readers ─────────────────
+      // Only fires when at least one filter is active AND there are results —
+      // the 0-result case is handled by focusing the empty message below.
+      const statusEl = document.getElementById('filterStatus');
+      if (statusEl) {
+        if (visible > 0 && (activeProvince !== 'all' || activeVersion !== 'all')) {
+          const pelicules = visible === 1 ? 'pel·lícula' : 'pel·lícules';
+          const parts = [`S'estan mostrant ${visible} ${pelicules}`];
+          if (activeProvince !== 'all') parts.push(`a ${activeProvince}`);
+          if (activeVersion !== 'all') parts.push(`en versió ${activeVersion}`);
+          // Append a zero-width space to force a re-announcement if the same
+          // text is set twice in a row (e.g. clicking the same button again).
+          statusEl.textContent = parts.join(' ') + '\u200B';
+        } else {
+          statusEl.textContent = '';
+        }
+      }
+
+      // ── Empty state ───────────────────────────────────────────────────────────
       let msg = document.getElementById('filterEmptyMsg');
       if (!visible) {
         if (!msg) {
           msg = document.createElement('p');
           msg.id = 'filterEmptyMsg';
           msg.className = 'status-msg';
-          msg.setAttribute('role', 'status');
+          msg.setAttribute('tabindex', '-1');
           msg.textContent = 'Cap pel·lícula amb aquesta combinació de filtres.';
           document.getElementById('mainCarousel')?.appendChild(msg);
         }
+        // Move focus to the empty message so keyboard/SR users know immediately
+        // why there is nothing to navigate to.
+        msg.focus();
       } else {
         msg?.remove();
       }

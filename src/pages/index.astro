@@ -214,11 +214,21 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
             aria-label="Filtrar pel·lícules per província"
             data-filter-type="province"
           >
-            <button class="filter-btn" data-province-filter="all" aria-pressed="true">
+            <button
+              class="filter-btn"
+              data-province-filter="all"
+              aria-pressed="true"
+              aria-controls="mainCarousel"
+            >
               Totes
             </button>
             {availableProvinces.map((province) => (
-              <button class="filter-btn" data-province-filter={province} aria-pressed="false">
+              <button
+                class="filter-btn"
+                data-province-filter={province}
+                aria-pressed="false"
+                aria-controls="mainCarousel"
+              >
                 {province}
               </button>
             ))}
@@ -232,17 +242,37 @@ const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
         aria-label="Filtrar pel·lícules per versió"
         data-filter-type="version"
       >
-        <button class="filter-btn" data-filter="all" aria-pressed="true">Totes</button>
-        <button class="filter-btn" data-filter="VDC" aria-pressed="false"
+        <button
+          class="filter-btn"
+          data-filter="all"
+          aria-pressed="true"
+          aria-controls="mainCarousel">Totes</button
+        >
+        <button
+          class="filter-btn"
+          data-filter="VDC"
+          aria-pressed="false"
+          aria-controls="mainCarousel"
           >Doblada al Català (<abbr title="Versió Doblada al Català">VDC</abbr>)</button
         >
-        <button class="filter-btn" data-filter="VO" aria-pressed="false"
+        <button
+          class="filter-btn"
+          data-filter="VO"
+          aria-pressed="false"
+          aria-controls="mainCarousel"
           >Versió Original (<abbr title="Versió Original">VO</abbr>)</button
         >
-        <button class="filter-btn" data-filter="VOSC" aria-pressed="false"
+        <button
+          class="filter-btn"
+          data-filter="VOSC"
+          aria-pressed="false"
+          aria-controls="mainCarousel"
           >Sub. Català (<abbr title="Versió Original Subtitulada en Català">VOSC</abbr>)</button
         >
       </div>
+
+      <!-- Live region: announces filtered count to screen readers -->
+      <p id="filterStatus" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
 
       <div class="carousel-wrap">
         <div class="carousel" id="mainCarousel" role="list" aria-label="Pel·lícules en cartellera">
