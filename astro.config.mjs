@@ -6,7 +6,7 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   output: 'server',
   adapter: vercel(),
-  site: 'https://filmcat.cat',
+  site: 'https://www.filmcat.app',
 
   // Allow Astro's <Image> to optimise remote TMDB posters (→ WebP, correct sizing)
   image: {
