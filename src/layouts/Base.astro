@@ -900,12 +900,24 @@ const {
         position: relative;
         background: var(--bg3);
       }
+      /* Shimmer while poster is in flight */
+      .card-img-wrap:has(img:not(.loaded)) {
+        background: linear-gradient(90deg, var(--bg3) 25%, var(--surface2) 50%, var(--bg3) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.6s infinite;
+      }
       .card-img-wrap img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
-        transition: transform 0.4s ease;
+        opacity: 0;
+        transition:
+          transform 0.4s ease,
+          opacity 0.35s ease;
+      }
+      .card-img-wrap img.loaded {
+        opacity: 1;
       }
       .card:hover .card-img-wrap img {
         transform: scale(1.05);

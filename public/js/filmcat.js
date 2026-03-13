@@ -281,8 +281,25 @@
   let activeProvince = 'all';
   let activeVersion = 'all';
 
+  // ── CARD POSTER SHIMMER ──
+  // Marks each poster <img> as .loaded once the browser confirms it has painted,
+  // which lifts opacity from 0→1 and stops the shimmer on .card-img-wrap.
+  function initCardShimmers() {
+    document.querySelectorAll('.card-img-wrap img').forEach((img) => {
+      const markLoaded = () => img.classList.add('loaded');
+      if (img.complete && img.naturalWidth > 0) {
+        markLoaded();
+      } else {
+        img.addEventListener('load', markLoaded, { once: true });
+        img.addEventListener('error', markLoaded, { once: true }); // show broken img rather than blank
+      }
+    });
+  }
+
   // ── INIT — runs on every page load, including View Transitions navigations ──
   function init() {
+    initCardShimmers();
+
     // Restore scroll position when returning to home page (cross-browser, incl. Safari)
     // Skip if the URL has a hash — the browser/anchor scroll takes priority.
     const savedScroll = sessionStorage.getItem('filmcat_scroll');
