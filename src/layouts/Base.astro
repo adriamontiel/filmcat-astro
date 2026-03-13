@@ -622,6 +622,13 @@ const {
       }
       @media (max-width: 639px) {
         .hero {
+          padding: calc(64px + 0.75rem) var(--px) 0.875rem;
+        }
+        .hero h1 {
+          font-size: 1.75rem;
+          margin-bottom: 6px;
+        }
+        .hero-sub {
           display: none;
         }
       }
@@ -1660,9 +1667,6 @@ const {
         }
         h1 {
           letter-spacing: 1px;
-        }
-        main {
-          padding-top: calc(64px + 1.25rem);
         }
         .scroll-hint {
           display: none;
