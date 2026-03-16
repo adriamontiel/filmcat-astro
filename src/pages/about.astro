@@ -175,6 +175,17 @@ const jsonLd = {
     </div>
   </main>
   <Footer />
+  <script>
+    document.querySelectorAll<HTMLImageElement>('.about-photo-single img').forEach((img) => {
+      const mark = () => img.classList.add('loaded');
+      if (img.complete && img.naturalWidth > 0) {
+        mark();
+      } else {
+        img.addEventListener('load', mark, { once: true });
+        img.addEventListener('error', mark, { once: true });
+      }
+    });
+  </script>
 </Base>
 
 <style>
@@ -237,12 +248,26 @@ const jsonLd = {
   .about-photo-single {
     margin: 0 auto 2.5rem;
     max-width: 220px;
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg3);
+  }
+  .about-photo-single:has(img:not(.loaded)) {
+    background: linear-gradient(90deg, var(--bg3) 25%, var(--surface2) 50%, var(--bg3) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
   }
   .about-photo-single img {
     width: 100%;
     height: auto;
     display: block;
     border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .about-photo-single img.loaded {
+    opacity: 1;
   }
   @media (max-width: 640px) {
     .about-photo-single {
