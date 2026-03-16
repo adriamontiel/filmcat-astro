@@ -2,11 +2,6 @@
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { Image } from 'astro:assets';
-import aboutParella from '../assets/about/about-parella.png';
-import aboutFamilia from '../assets/about/about-familia.png';
-import aboutPareFill from '../assets/about/about-pare-fill.png';
-import aboutAmigues from '../assets/about/about-amigues.png';
 
 const title = 'Sobre FILMCAT — Cartellera de Cinema en Català';
 const description =
@@ -55,12 +50,13 @@ const jsonLd = {
       </section>
 
       <div class="about-photo-single">
-        <Image
-          src={aboutAmigues}
+        <img
+          src="/about/about-amigues.png"
           alt="Amigues gaudint del cinema en català"
-          widths={[240, 480]}
-          sizes="(max-width: 640px) 65vw, 220px"
+          width="220"
+          height="330"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -89,12 +85,13 @@ const jsonLd = {
       </section>
 
       <div class="about-photo-single">
-        <Image
-          src={aboutFamilia}
+        <img
+          src="/about/about-familia.png"
           alt="Família gaudint del cinema en català"
-          widths={[240, 480]}
-          sizes="(max-width: 640px) 65vw, 220px"
+          width="220"
+          height="330"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -120,12 +117,13 @@ const jsonLd = {
       </section>
 
       <div class="about-photo-single">
-        <Image
-          src={aboutParella}
+        <img
+          src="/about/about-parella.png"
           alt="Parella veient una pel·lícula en català al cinema"
-          widths={[240, 480]}
-          sizes="(max-width: 640px) 65vw, 220px"
+          width="220"
+          height="330"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -145,12 +143,13 @@ const jsonLd = {
       </section>
 
       <div class="about-photo-single">
-        <Image
-          src={aboutPareFill}
+        <img
+          src="/about/about-pare-fill.png"
           alt="Pare i fill al cinema en català"
-          widths={[240, 480]}
-          sizes="(max-width: 640px) 65vw, 220px"
+          width="220"
+          height="330"
           loading="lazy"
+          decoding="async"
         />
       </div>
 
