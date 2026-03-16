@@ -18,7 +18,7 @@ const extraCount = filmCount > 3 ? filmCount - 3 : 0;
 <a
   href={`/cinemes/${slug}`}
   class="cinema-card"
-  aria-label={`${cinema.name}, ${cinema.city}, ${filmCount} pel·lícules en català`}
+  aria-label={`${cinema.name}, ${cinema.city}, ${filmCount} ${filmCount === 1 ? 'pel·lícula' : 'pel·lícules'} en català`}
   data-cinema-province={province}
 >
   <!-- ── POSTER STRIP ── -->
@@ -60,8 +60,12 @@ const extraCount = filmCount > 3 ? filmCount - 3 : 0;
         </svg>
         {cinema.city}
       </div>
-      <div class="cinema-films-count" aria-label={`${filmCount} pel·lícules`}>
-        {filmCount} pel·lícules
+      <div
+        class="cinema-films-count"
+        aria-label={`${filmCount} ${filmCount === 1 ? 'pel·lícula' : 'pel·lícules'}`}
+      >
+        {filmCount}
+        {filmCount === 1 ? 'pel·lícula' : 'pel·lícules'}
       </div>
     </div>
   </div>
