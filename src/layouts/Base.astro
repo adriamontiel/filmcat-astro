@@ -1765,9 +1765,15 @@ const {
         position: relative;
         z-index: 2;
         display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: calc(var(--nav-h) + clamp(16px, 3vw, 32px)) var(--px) clamp(24px, 4vw, 40px);
+        min-height: inherit;
+      }
+      .film-hero-main {
+        display: flex;
         align-items: flex-end;
         gap: clamp(16px, 3vw, 28px);
-        padding: calc(var(--nav-h) + clamp(40px, 7vw, 96px)) var(--px) clamp(24px, 4vw, 40px);
       }
       .film-poster {
         width: clamp(80px, 14vw, 120px);

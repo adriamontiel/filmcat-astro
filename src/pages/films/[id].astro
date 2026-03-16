@@ -213,80 +213,81 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
         }
         <div class="film-backdrop-gradient" aria-hidden="true"></div>
         <div class="film-hero-content">
-          <div class="film-poster">
-            {
-              posterUrl ? (
-                <img
-                  src={posterUrl}
-                  alt={`Pòster oficial de ${film.title}`}
-                  width="120"
-                  height="180"
-                  decoding="async"
-                  loading="eager"
-                />
-              ) : (
-                <div
-                  class="poster-placeholder"
-                  style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
-                  aria-hidden="true"
-                >
-                  <svg viewBox="0 0 100 88" width="32" style="opacity:.25">
-                    <polygon points="50,0 100,88 0,88" fill="white" />
-                  </svg>
-                  <div class="abbr" style="font-size:1rem">
-                    {abbr}
+          <a href="/" class="film-back-link" id="backLink" aria-label="Tornar a la cartellera">
+            ← Cartellera
+          </a>
+          <div class="film-hero-main">
+            <div class="film-poster">
+              {
+                posterUrl ? (
+                  <img
+                    src={posterUrl}
+                    alt={`Pòster oficial de ${film.title}`}
+                    width="120"
+                    height="180"
+                    decoding="async"
+                    loading="eager"
+                  />
+                ) : (
+                  <div
+                    class="poster-placeholder"
+                    style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
+                    aria-hidden="true"
+                  >
+                    <svg viewBox="0 0 100 88" width="32" style="opacity:.25">
+                      <polygon points="50,0 100,88 0,88" fill="white" />
+                    </svg>
+                    <div class="abbr" style="font-size:1rem">
+                      {abbr}
+                    </div>
                   </div>
-                </div>
-              )
-            }
-          </div>
-          <div class="film-hero-info">
-            <h1 class="film-title">{film.title}</h1>
-            {
-              film.titleOriginal && film.titleOriginal !== film.title && (
-                <p class="film-original-title">{film.titleOriginal}</p>
-              )
-            }
-            <div class="film-tags">
-              <span class={`badge${isVO ? ' vo' : ''}`}>
-                <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
-              </span>
-              {
-                ri && (
-                  <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
-                    <abbr title={ri.full}>{ri.short}</abbr>
-                  </span>
                 )
               }
-              {cleanLanguage && <span class="tag">{cleanLanguage}</span>}
-              {film.genres?.[0] && <span class="tag">{film.genres[0]}</span>}
-              {
-                film.runtime && (
-                  <span class="tag" aria-label={`Durada: ${film.runtime} minuts`}>
-                    {film.runtime} min
-                  </span>
-                )
-              }
-              {film.year && <span class="tag">{film.year}</span>}
-              {film.director && <span class="tag">{film.director}</span>}
             </div>
-            {
-              premiereDisplay && (
-                <p class="film-premiere" aria-label={`Data d'estrena: ${premiereDisplay}`}>
-                  <span aria-hidden="true">📅</span> Estrena: {premiereDisplay}
-                </p>
-              )
-            }
+            <div class="film-hero-info">
+              <h1 class="film-title">{film.title}</h1>
+              {
+                film.titleOriginal && film.titleOriginal !== film.title && (
+                  <p class="film-original-title">{film.titleOriginal}</p>
+                )
+              }
+              <div class="film-tags">
+                <span class={`badge${isVO ? ' vo' : ''}`}>
+                  <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
+                </span>
+                {
+                  ri && (
+                    <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
+                      <abbr title={ri.full}>{ri.short}</abbr>
+                    </span>
+                  )
+                }
+                {cleanLanguage && <span class="tag">{cleanLanguage}</span>}
+                {film.genres?.[0] && <span class="tag">{film.genres[0]}</span>}
+                {
+                  film.runtime && (
+                    <span class="tag" aria-label={`Durada: ${film.runtime} minuts`}>
+                      {film.runtime} min
+                    </span>
+                  )
+                }
+                {film.year && <span class="tag">{film.year}</span>}
+                {film.director && <span class="tag">{film.director}</span>}
+              </div>
+              {
+                premiereDisplay && (
+                  <p class="film-premiere" aria-label={`Data d'estrena: ${premiereDisplay}`}>
+                    <span aria-hidden="true">📅</span> Estrena: {premiereDisplay}
+                  </p>
+                )
+              }
+            </div>
           </div>
         </div>
       </div>
 
       <!-- ── BODY ── -->
       <div class="film-body">
-        <a href="/" class="film-back-link" id="backLink" aria-label="Tornar a la cartellera">
-          ← Cartellera
-        </a>
-
         <!-- Trailer -->
         {
           film._trailerKey && (
