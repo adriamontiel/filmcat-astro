@@ -1978,9 +1978,15 @@ const {
         const root = document.documentElement;
         const hdr = document.querySelector('header');
         function setNavH() {
-          if (hdr) root.style.setProperty('--nav-h', hdr.offsetHeight + 'px');
+          if (hdr) {
+            const h = hdr.offsetHeight;
+            if (h > 0) root.style.setProperty('--nav-h', h + 'px');
+          }
         }
         setNavH();
+        // Second pass after first paint — catches Safari where offsetHeight
+        // may be 0 when the inline script runs before layout is complete.
+        requestAnimationFrame(setNavH);
         let timer;
         window.addEventListener('resize', function () {
           clearTimeout(timer);
