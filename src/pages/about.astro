@@ -2,6 +2,11 @@
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { Image } from 'astro:assets';
+import aboutParella from '../assets/about/about-parella.png';
+import aboutFamilia from '../assets/about/about-familia.png';
+import aboutPareFill from '../assets/about/about-pare-fill.png';
+import aboutAmigues from '../assets/about/about-amigues.png';
 
 const title = 'Sobre FILMCAT — Cartellera de Cinema en Català';
 const description =
@@ -49,6 +54,16 @@ const jsonLd = {
         </p>
       </section>
 
+      <div class="about-photo-single">
+        <Image
+          src={aboutAmigues}
+          alt="Amigues gaudint del cinema en català"
+          widths={[240, 480]}
+          sizes="(max-width: 640px) 65vw, 220px"
+          loading="lazy"
+        />
+      </div>
+
       <section aria-labelledby="dades">
         <h2 id="dades">Dades del projecte</h2>
         <dl>
@@ -73,6 +88,16 @@ const jsonLd = {
         </dl>
       </section>
 
+      <div class="about-photo-single">
+        <Image
+          src={aboutFamilia}
+          alt="Família gaudint del cinema en català"
+          widths={[240, 480]}
+          sizes="(max-width: 640px) 65vw, 220px"
+          loading="lazy"
+        />
+      </div>
+
       <section aria-labelledby="formats">
         <h2 id="formats">Formats de projecció</h2>
         <dl>
@@ -94,6 +119,16 @@ const jsonLd = {
         </dl>
       </section>
 
+      <div class="about-photo-single">
+        <Image
+          src={aboutParella}
+          alt="Parella veient una pel·lícula en català al cinema"
+          widths={[240, 480]}
+          sizes="(max-width: 640px) 65vw, 220px"
+          loading="lazy"
+        />
+      </div>
+
       <section aria-labelledby="context">
         <h2 id="context">Context cultural</h2>
         <p>
@@ -108,6 +143,16 @@ const jsonLd = {
           a dades obertes— però no hi havia cap eina que les presentés de forma útil i accessible.
         </p>
       </section>
+
+      <div class="about-photo-single">
+        <Image
+          src={aboutPareFill}
+          alt="Pare i fill al cinema en català"
+          widths={[240, 480]}
+          sizes="(max-width: 640px) 65vw, 220px"
+          loading="lazy"
+        />
+      </div>
 
       <section aria-labelledby="descripcions">
         <h2 id="descripcions">Descripció en altres idiomes</h2>
@@ -138,6 +183,9 @@ const jsonLd = {
     max-width: 720px;
     margin: 0 auto;
     padding: calc(64px + 2.5rem) var(--px) 4rem;
+  }
+  .about-wrap {
+    width: 100%;
   }
   h1 {
     font-family: 'Bebas Neue', sans-serif;
@@ -184,5 +232,22 @@ const jsonLd = {
   }
   section:last-child {
     border-bottom: none;
+  }
+
+  /* Foto individual centrada */
+  .about-photo-single {
+    margin: 0 auto 2.5rem;
+    max-width: 220px;
+  }
+  .about-photo-single img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+  }
+  @media (max-width: 640px) {
+    .about-photo-single {
+      max-width: 65vw;
+    }
   }
 </style>
