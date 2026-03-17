@@ -91,7 +91,7 @@ const filmJson = JSON.stringify({
   backdropPath: film.backdropPath,
   _tmdbId: film._tmdbId ?? null,
   _trailerKey: film._trailerKey ?? null,
-  sessions: film.sessions,
+  sessions: film.sessions.map((s) => ({ ...s, province: cityToProvince(s.city) })),
 });
 ---
 

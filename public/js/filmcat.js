@@ -182,22 +182,19 @@
         sg.innerHTML =
           '<p class="status-msg" role="status">Properament — Sessions pendent de confirmar</p>';
       } else {
-        sg.innerHTML = film.sessions
-          .map((s) => {
-            const isVO = ['VO', 'VOSC', 'VOSE'].includes(s.lang);
-            const mapsQ = encodeURIComponent(`${s.cinema}, ${s.city}`);
-            const mapsLink = sanitizeUrl(
-              `https://www.google.com/maps/search/?api=1&query=${mapsQ}`
-            );
-            const times = (s.times || [])
-              .map(
-                (t) =>
-                  `<button class="session-time" aria-label="${sanitize(t)} a ${sanitize(s.cinema)}, versió ${sanitize(s.lang)}">
+        function sessionHTML(s) {
+          const isVO = ['VO', 'VOSC', 'VOSE'].includes(s.lang);
+          const mapsQ = encodeURIComponent(`${s.cinema}, ${s.city}`);
+          const mapsLink = sanitizeUrl(`https://www.google.com/maps/search/?api=1&query=${mapsQ}`);
+          const times = (s.times || [])
+            .map(
+              (t) =>
+                `<button class="session-time" aria-label="${sanitize(t)} a ${sanitize(s.cinema)}, versió ${sanitize(s.lang)}">
               ${sanitize(t)} <span class="session-time-lang" aria-hidden="true">${sanitize(s.lang)}</span>
             </button>`
-              )
-              .join('');
-            return `<div class="session-cinema" role="listitem">
+            )
+            .join('');
+          return `<div class="session-cinema" role="listitem">
             <div class="session-cinema-header">
               <div>
                 <div class="session-cinema-name-row">
@@ -211,8 +208,20 @@
             </div>
             <div class="session-times" role="group" aria-label="Horaris a ${sanitize(s.cinema)}">${times}</div>
           </div>`;
-          })
-          .join('');
+        }
+
+        if (activeProvince === 'all') {
+          sg.innerHTML = film.sessions.map(sessionHTML).join('');
+        } else {
+          const primary = film.sessions.filter((s) => s.province === activeProvince);
+          const others = film.sessions.filter((s) => s.province !== activeProvince);
+          let html = primary.map(sessionHTML).join('');
+          if (others.length) {
+            html += `<div class="modal-sessions-divider" role="separator">Altres sessions</div>`;
+            html += others.map(sessionHTML).join('');
+          }
+          sg.innerHTML = html;
+        }
       }
     }
 
