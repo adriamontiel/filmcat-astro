@@ -356,6 +356,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                       class="session-cinema"
                       role="listitem"
                       data-province={cityToProvince(session.city)}
+                      data-cinema={session.cinema}
                     >
                       <div class="session-cinema-header">
                         <div>
@@ -405,7 +406,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                       <div
                         class="session-times"
                         role="group"
-                        aria-label={`Horaris a ${session.cinema}`}
+                        aria-label={`Dies de projecció a ${session.cinema}`}
                       >
                         {session.times.map((time) => (
                           <span class="session-time" aria-label={`${time} a ${session.cinema}`}>
@@ -416,6 +417,11 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                           </span>
                         ))}
                       </div>
+                      <div
+                        class="session-horaris"
+                        aria-live="polite"
+                        aria-label={`Horaris d'avui a ${session.cinema}`}
+                      />
                     </div>
                   );
                 })}
@@ -436,6 +442,72 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" set:html={jsonLdStr} />
   <script type="application/ld+json" set:html={breadcrumbLdStr} />
+
+  <!-- Horaris en temps real: fetch /api/horaris per a cada cinema de la pàgina -->
+  <script define:vars={{ filmTitle: film.title }}>
+    document.addEventListener('astro:page-load', async () => {
+      const cards = [...document.querySelectorAll('.session-cinema[data-cinema]')];
+      if (cards.length === 0) return;
+
+      // Mostra skeleton mentre carrega
+      cards.forEach((card) => {
+        const container = card.querySelector('.session-horaris');
+        if (container)
+          container.innerHTML = '<span class="horaris-loading" aria-hidden="true"></span>';
+      });
+
+      const today = new Date().toISOString().split('T')[0];
+      const cinemaNames = [...new Set(cards.map((el) => el.dataset.cinema))];
+
+      const params = new URLSearchParams({ film: filmTitle, data: today });
+      cinemaNames.forEach((name) => params.append('c', name));
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 7000);
+
+      try {
+        const res = await fetch(`https://filmcat-api.vercel.app/api/horaris?${params}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('API error');
+        const { cinemes } = await res.json();
+
+        for (const result of cinemes) {
+          // Actualitza TOTES les cards del mateix cinema (pot repetir-se si el film té múltiples sessions)
+          const matchingCards = cards.filter((el) => el.dataset.cinema === result.cinema);
+
+          for (const card of matchingCards) {
+            const container = card.querySelector('.session-horaris');
+            if (!container) continue;
+
+            if (result.status === 'ok' && result.sessions.length > 0) {
+              const times = result.sessions
+                .map((s) => {
+                  const ver = s.version ? `<span class="horari-ver">${s.version}</span>` : '';
+                  return `<span class="horari-time">${s.time}${ver}</span>`;
+                })
+                .join('');
+              container.innerHTML = `<div class="horaris-row">${times}</div>`;
+            } else if (result.web) {
+              container.innerHTML =
+                `<a href="${result.web}" target="_blank" rel="noopener noreferrer" class="horaris-web-link">` +
+                `Consulta els horaris a la seva web <span aria-hidden="true">↗</span></a>`;
+            } else {
+              container.innerHTML = '';
+            }
+          }
+        }
+      } catch {
+        clearTimeout(timer);
+        // Fallback silenciós: elimina els skeletons
+        cards.forEach((card) => {
+          const container = card.querySelector('.session-horaris');
+          if (container) container.innerHTML = '';
+        });
+      }
+    });
+  </script>
 
   <!-- Province-aware session grouping: reorders sessions when a province filter is active -->
   <script>
