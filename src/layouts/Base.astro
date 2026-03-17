@@ -1350,23 +1350,6 @@ const {
         font-weight: 600;
         overflow-wrap: break-word;
       }
-      .session-maps-link {
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        color: var(--red-light);
-        text-decoration: none;
-        border-bottom: 1px solid rgba(231, 76, 60, 0.35);
-        transition:
-          color 0.15s,
-          border-color 0.15s;
-        white-space: nowrap;
-        padding-bottom: 1px;
-      }
-      .session-maps-link:hover {
-        color: var(--text);
-        border-color: var(--text);
-      }
       .session-cinema-name-link {
         text-decoration: none;
         color: inherit;
@@ -1414,10 +1397,6 @@ const {
         align-items: center;
         gap: 6px;
       }
-      .session-city-sep {
-        color: var(--border);
-        line-height: 1;
-      }
       .session-times {
         display: flex;
         flex-wrap: wrap;
@@ -1452,23 +1431,28 @@ const {
         background: rgba(192, 57, 43, 0.13);
         border-color: rgba(192, 57, 43, 0.22);
       }
-      .session-time-lang {
-        font-size: 0.6rem;
-        color: var(--red-light);
-        letter-spacing: 0.8px;
-      }
-
       /* ── Horaris en temps real (filazero) ─────────────────────────────── */
       .session-horaris {
         min-height: 0;
+      }
+      /* Version label above the time pills (e.g. "VCAT") */
+      .horaris-version-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--gold, #d4af37);
+        margin-top: 14px;
+        margin-bottom: 5px;
       }
       .horaris-row {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border);
+      }
+      /* Quan no hi ha etiqueta de versió, el primer row necessita marge superior */
+      .session-horaris > .horaris-row:first-child {
+        margin-top: 14px;
       }
       .horari-time {
         display: inline-flex;
@@ -1484,29 +1468,23 @@ const {
         color: var(--text);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.02em;
+        min-height: 36px;
       }
-      .horari-ver {
-        font-size: 0.58rem;
-        font-weight: 500;
-        color: var(--gold, #d4af37);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-family: inherit;
-      }
-      .horaris-web-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        margin-top: 12px;
+      /* Action buttons row (Com arribar + Web oficial) */
+      .session-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
         padding-top: 12px;
         border-top: 1px solid var(--border);
-        font-size: 0.78rem;
-        color: var(--text3);
-        text-decoration: none;
-        transition: color 0.15s;
       }
-      .horaris-web-link:hover {
-        color: var(--text);
+      /* Smaller variant of .trailer-btn for session cards */
+      .session-action-btn {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.75rem;
+        min-height: 38px;
+        border-radius: 7px;
       }
       /* Skeleton loading */
       @keyframes horaris-shimmer {

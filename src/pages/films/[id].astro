@@ -62,6 +62,25 @@ const cleanLanguage = film.language
       .trim()
   : '';
 
+// Format session date to Catalan: "17/03/2026" → "Dimarts, 17 de març"
+function formatSessionDate(raw: string): string {
+  const parts = raw.split('/');
+  if (parts.length !== 3) return raw;
+  const [d, m, y] = parts.map(Number);
+  if (!d || !m || !y) return raw;
+  try {
+    const formatted = new Intl.DateTimeFormat('ca', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    }).format(new Date(y, m - 1, d));
+    // Capitalize first letter (Intl returns "dimarts, 17 de març" in lowercase)
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  } catch {
+    return raw;
+  }
+}
+
 // Format premiere date to Catalan: "06/03/2026" → "6 de març de 2026"
 function formatPremiere(raw: string | undefined): string | null {
   if (!raw || raw === '--') return null;
@@ -350,7 +369,6 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
             ) : (
               <div class="sessions-grid" role="list" aria-label="Sessions disponibles">
                 {film.sessions.map((session) => {
-                  const isSessionVO = ['VO', 'VOSC', 'VOSE'].includes(session.lang);
                   return (
                     <div
                       class="session-cinema"
@@ -383,25 +401,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                               <circle cx="12" cy="10" r="3" />
                             </svg>
                             {session.city}
-                            <span aria-hidden="true" class="session-city-sep">
-                              ·
-                            </span>
-                            <a
-                              href={mapsUrl(session.cinema, session.city)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              class="session-maps-link"
-                              aria-label={`Com arribar a ${session.cinema}`}
-                            >
-                              Com arribar
-                            </a>
                           </div>
                         </div>
-                        <span class={`badge${isSessionVO ? ' vo' : ''}`}>
-                          <abbr title={versionLabel[session.lang] ?? session.lang}>
-                            {session.lang}
-                          </abbr>
-                        </span>
                       </div>
                       <div
                         class="session-times"
@@ -409,11 +410,11 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                         aria-label={`Dies de projecció a ${session.cinema}`}
                       >
                         {session.times.map((time) => (
-                          <span class="session-time" aria-label={`${time} a ${session.cinema}`}>
-                            {time}
-                            <span class="session-time-lang" aria-hidden="true">
-                              {session.lang}
-                            </span>
+                          <span
+                            class="session-time"
+                            aria-label={`${formatSessionDate(time)} a ${session.cinema}`}
+                          >
+                            {formatSessionDate(time)}
                           </span>
                         ))}
                       </div>
@@ -422,6 +423,53 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                         aria-live="polite"
                         aria-label={`Horaris d'avui a ${session.cinema}`}
                       />
+                      <div class="session-actions">
+                        <a
+                          href={mapsUrl(session.cinema, session.city)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="trailer-btn session-action-btn"
+                          aria-label={`Com arribar a ${session.cinema}`}
+                        >
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            aria-hidden="true"
+                          >
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                          Com arribar
+                        </a>
+                        {_CINEMA_URLS[session.cinema] && (
+                          <a
+                            href={_CINEMA_URLS[session.cinema]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="trailer-btn session-action-btn"
+                            aria-label={`Web oficial de ${session.cinema}`}
+                          >
+                            <svg
+                              width="13"
+                              height="13"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              aria-hidden="true"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <line x1="2" y1="12" x2="22" y2="12" />
+                              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                            </svg>
+                            Web oficial
+                          </a>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -482,18 +530,24 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
             if (!container) continue;
 
             if (result.status === 'ok' && result.sessions.length > 0) {
-              const times = result.sessions
-                .map((s) => {
-                  const ver = s.version ? `<span class="horari-ver">${s.version}</span>` : '';
-                  return `<span class="horari-time">${s.time}${ver}</span>`;
-                })
-                .join('');
-              container.innerHTML = `<div class="horaris-row">${times}</div>`;
-            } else if (result.web) {
-              container.innerHTML =
-                `<a href="${result.web}" target="_blank" rel="noopener noreferrer" class="horaris-web-link">` +
-                `Consulta els horaris a la seva web <span aria-hidden="true">↗</span></a>`;
+              // Agrupa les sessions per versió (VCAT, VOS, etc.)
+              const byVersion = new Map();
+              for (const s of result.sessions) {
+                const ver = s.version || '';
+                if (!byVersion.has(ver)) byVersion.set(ver, []);
+                byVersion.get(ver).push(s.time);
+              }
+              let html = '';
+              for (const [ver, times] of byVersion) {
+                if (ver) {
+                  html += `<div class="horaris-version-label" aria-label="Versió ${ver}">${ver}</div>`;
+                }
+                const pills = times.map((t) => `<span class="horari-time">${t}</span>`).join('');
+                html += `<div class="horaris-row" role="group" aria-label="Horaris ${ver}">${pills}</div>`;
+              }
+              container.innerHTML = html;
             } else {
+              // Sense horaris concrets — els botons SSR (Web oficial) ja estan visibles
               container.innerHTML = '';
             }
           }
