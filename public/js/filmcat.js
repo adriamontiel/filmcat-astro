@@ -450,10 +450,14 @@
       }
     }
 
-    // Restore province from sessionStorage if returning from a film detail page,
-    // then clear it immediately so stale state never leaks into future re-inits.
+    // Restore province from sessionStorage if returning from a film detail page.
+    // Only consume (and remove) the value when the province filter bar is present on
+    // this page — otherwise leave it so the film detail page script can still read it.
     const savedProvince = sessionStorage.getItem('filmcat_province');
-    if (savedProvince !== null) {
+    if (
+      savedProvince !== null &&
+      document.querySelector('.filter-bar[data-filter-type="province"]')
+    ) {
       sessionStorage.removeItem('filmcat_province');
       activeProvince = savedProvince; // may be 'all' — that's correct too
     }
