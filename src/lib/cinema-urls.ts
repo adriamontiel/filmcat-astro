@@ -37,7 +37,7 @@ export const CINEMA_URLS: Record<string, string> = {
   // ── ACEC ────────────────────────────────────────────────────────────────
   'ACEC CAT Cines Figueres': 'https://www.cinesacec.es',
   'ACEC Cines Bages Centre de Manresa': 'https://www.cinesacec.es',
-  "ACEC Cines Filmax Gran Via de l'Hospitalet de Llobregat": 'https://www.cinesacec.es',
+  "ACEC Cines Filmax Gran Via de l'Hospitalet de Llobregat": 'https://cinesfilmax.com/',
   'ACEC Cines Imperial de Sabadell': 'https://www.cinesacec.es',
   'ACEC Cines Olot': 'https://www.cinesacec.es',
   'ACEC Multicinemes Eix Macià de Sabadell': 'https://www.cinesacec.es',
