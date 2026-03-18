@@ -28,7 +28,7 @@ export const CINEMA_URLS: Record<string, string> = {
   'Ocine Girona': 'https://www.ocine.es',
   'Ocine Granollers - El Nord': 'https://www.ocine.es',
   'Ocine Màgic Badalona': 'https://www.ocine.es',
-  "Ocine Platja d'Aro – Parc d'Aro": 'https://www.ocine.es',
+  "Ocine Platja d'Aro – Parc d'Aro": 'https://www.ocineplatjadaro.es/',
   'Ocine Premium Lleida': 'https://www.ocine.es',
   'Ocine Roquetes': 'https://www.ocine.es',
   'Ocine Tarragona - Les Gavarres': 'https://www.ocine.es',
