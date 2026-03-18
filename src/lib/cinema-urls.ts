@@ -44,7 +44,7 @@ export const CINEMA_URLS: Record<string, string> = {
 
   // ── GRUP BALAÑÁ ─────────────────────────────────────────────────────────
   // Nota: el domini era grupbalanas.com (mort) — el correcte és grupbalana.com
-  'Aribau Multicines': 'https://www.grupbalana.com',
+  'Aribau Multicines': 'https://www.moobycinemas.com/aribau',
   'Arenas Multicines': 'https://www.grupbalana.com',
   'Balmes Multicines': 'https://www.grupbalana.com',
   'Glòries Multicines': 'https://www.grupbalana.com',
