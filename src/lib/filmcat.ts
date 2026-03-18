@@ -156,9 +156,11 @@ export async function fetchFilms(): Promise<{
   isOffline: boolean;
 }> {
   try {
-    const r = await fetch(`${API_URL}/api/cartellera`, {
+    // Cache-buster horari: la CDN de Vercel ignora Cache-Control en requests,
+    // però una URL diferent cada hora força un fetch fresc de l'origen.
+    const hourKey = Math.floor(Date.now() / 3_600_000);
+    const r = await fetch(`${API_URL}/api/cartellera?_h=${hourKey}`, {
       signal: AbortSignal.timeout(12000),
-      cache: 'no-store', // dades de cartellera canvien diàriament — sempre fresques
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
 
@@ -187,9 +189,9 @@ export async function fetchFilms(): Promise<{
 
 export async function fetchCinemas(): Promise<Cinema[]> {
   try {
-    const r = await fetch(`${API_URL}/api/cinemes`, {
+    const hourKey = Math.floor(Date.now() / 3_600_000);
+    const r = await fetch(`${API_URL}/api/cinemes?_h=${hourKey}`, {
       signal: AbortSignal.timeout(8000),
-      cache: 'no-store',
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
 
