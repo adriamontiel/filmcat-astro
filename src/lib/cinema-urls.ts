@@ -77,7 +77,7 @@ export const CINEMA_URLS: Record<string, string> = {
 
   // ── INDEPENDENTS ────────────────────────────────────────────────────────
   'Cines Verdi': 'https://cines-verdi.com',
-  'Zumzeig Cinema': 'https://zumzeigcine.coop',
+  'Zumzeig Cinema': 'https://www.codetickets.com/portal/zumzeigcooperativa/online/',
   'Cinema Maldà': 'https://cinemamalda.com',
   'Espai Texas': 'https://espaitexas.cat',
   'Filmoteca de Catalunya': 'https://www.filmoteca.cat',
