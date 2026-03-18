@@ -83,6 +83,7 @@ export const CINEMA_URLS: Record<string, string> = {
   'Filmoteca de Catalunya': 'https://www.filmoteca.cat',
   'Renoir Floridablanca': 'https://www.cinesrenoir.com',
   'Cinema Truffaut de Girona': 'https://cinematruffaut.girona.cat',
+  'CineBaix de Sant Feliu de Llobregat': 'https://www.cinebaix.com',
   'Cinemes Can Castellet de Sant Boi de Llobregat': 'https://cinemescancastellet.com',
   'Cinemes Roses': 'https://cinemesroses.cat',
   "Cinemes Guiu de La Seu d'Urgell": 'https://cinemesguiu.com',
