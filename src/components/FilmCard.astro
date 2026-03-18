@@ -102,7 +102,7 @@ const filmJson = JSON.stringify({
   data-version={film.version}
   data-province={filmProvinces}
   data-film={filmJson}
-  aria-label={`${film.title} (${film.year}), versió ${film.version}${ri ? `, ${ri.full}` : ''}${!isUpcoming ? `, ${sessionCount} sessions avui` : `${premiereLabel ? `, estrena ${premiereLabel}` : ', pròximament'}`}`}
+  aria-label={`${film.title} (${film.year}), versió ${film.version}${ri ? `, ${ri.full}` : ''}${!isUpcoming ? `, ${sessionCount} sessions` : `${premiereLabel ? `, estrena ${premiereLabel}` : ', pròximament'}`}`}
 >
   <div class="card-img-wrap">
     {
@@ -134,7 +134,7 @@ const filmJson = JSON.stringify({
     <div class="card-overlay" aria-hidden="true">
       <div class="card-overlay-title">{film.title}</div>
       <div class="card-overlay-sessions">
-        {!isUpcoming ? `${sessionCount} sessions avui` : 'Pròximament'}
+        {!isUpcoming ? `${sessionCount} sessions` : 'Pròximament'}
       </div>
     </div>
   </div>
