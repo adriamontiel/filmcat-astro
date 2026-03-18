@@ -610,4 +610,26 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
       }
     });
   </script>
+
+  <!-- Cinema-priority session ordering: moves the source cinema to the top -->
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const params = new URLSearchParams(location.search);
+      const targetCinema = params.get('cinema');
+      if (!targetCinema) return;
+
+      const grid = document.querySelector('.sessions-grid');
+      if (!grid) return;
+
+      const items = [...grid.querySelectorAll(':scope > .session-cinema')];
+      const match = items.filter((el) => (el as HTMLElement).dataset.cinema === targetCinema);
+      const others = items.filter((el) => (el as HTMLElement).dataset.cinema !== targetCinema);
+
+      if (match.length === 0) return;
+
+      grid.innerHTML = '';
+      match.forEach((el) => grid.appendChild(el));
+      others.forEach((el) => grid.appendChild(el));
+    });
+  </script>
 </Base>

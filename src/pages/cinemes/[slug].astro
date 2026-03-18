@@ -201,7 +201,7 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
           ) : (
             <div class="carousel" role="list" aria-label={`Pel·lícules en català a ${cinemaName}`}>
               {cinemaFilms.map((film) => (
-                <FilmCard film={film} />
+                <FilmCard film={film} priorityCinema={cinemaName} />
               ))}
             </div>
           )

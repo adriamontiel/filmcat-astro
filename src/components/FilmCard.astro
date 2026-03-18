@@ -9,13 +9,16 @@ import { ratingInfo } from '../lib/rating';
 
 interface Props {
   film: Film;
+  priorityCinema?: string;
 }
-const { film } = Astro.props;
+const { film, priorityCinema } = Astro.props;
 
 const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
 const isUpcoming = film.sessions.length === 0;
-const slug = slugify(film.title);
-const href = `/films/${slug}`;
+const filmSlug = slugify(film.title);
+const href = priorityCinema
+  ? `/films/${filmSlug}?cinema=${encodeURIComponent(priorityCinema)}`
+  : `/films/${filmSlug}`;
 
 // Poster URL + responsive srcset (server-side resolved)
 // TMDB serves the same image at w185 / w342 / w500 — browser picks the
