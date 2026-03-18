@@ -10,7 +10,7 @@ export const CINEMA_URLS: Record<string, string> = {
   "Cinesa La Farga de l'Hospitalet de Llobregat": 'https://www.cinesa.es',
   'Cinesa Barnasud de Gavà': 'https://www.cinesa.es',
   'Cinesa Parc Vallès de Terrassa': 'https://www.cinesa.es',
-  'Cinesa SOM Multiespai': 'https://www.cinesa.es',
+  'Cinesa SOM Multiespai': 'https://www.cinesa.es/cines/som-multiespai/',
 
   // ── YELMO ───────────────────────────────────────────────────────────────
   'Cine Yelmo Abrera': 'https://www.yelmocines.es',
