@@ -158,6 +158,7 @@ export async function fetchFilms(): Promise<{
   try {
     const r = await fetch(`${API_URL}/api/cartellera`, {
       signal: AbortSignal.timeout(12000),
+      cache: 'no-store', // dades de cartellera canvien diàriament — sempre fresques
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
 
@@ -188,6 +189,7 @@ export async function fetchCinemas(): Promise<Cinema[]> {
   try {
     const r = await fetch(`${API_URL}/api/cinemes`, {
       signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
 
