@@ -191,9 +191,9 @@ const abbr = film.title
   .toUpperCase()
   .slice(0, 3);
 
-// Maps URL helper
-function mapsUrl(cinema: string, city: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cinema}, ${city}`)}`;
+// Maps web fallback URL (desktop + crawlers)
+function mapsWebUrl(cinema: string, city: string) {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${cinema}, ${city}`)}`;
 }
 
 // Cache
@@ -425,10 +425,11 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                       />
                       <div class="session-actions">
                         <a
-                          href={mapsUrl(session.cinema, session.city)}
+                          href={mapsWebUrl(session.cinema, session.city)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="trailer-btn session-action-btn"
+                          class="trailer-btn session-action-btn maps-link"
+                          data-maps-query={`${session.cinema}, ${session.city}`}
                           aria-label={`Com arribar a ${session.cinema}`}
                         >
                           <svg
@@ -608,6 +609,23 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
         grid.appendChild(makeLabel('Altres sessions', 'others'));
         grid.appendChild(othList);
       }
+    });
+  </script>
+
+  <!-- Maps deep link: geo: on Android, comgooglemaps:// on iOS, web fallback on desktop -->
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      document.querySelectorAll('.maps-link').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          const ua = navigator.userAgent;
+          const isIOS = /iPhone|iPad|iPod/i.test(ua);
+          const isAndroid = /Android/i.test(ua);
+          if (!isIOS && !isAndroid) return; // desktop: obre href en nova pestanya
+          e.preventDefault();
+          const query = encodeURIComponent((el as HTMLAnchorElement).dataset.mapsQuery ?? '');
+          window.location.href = isAndroid ? `geo:0,0?q=${query}` : `comgooglemaps://?q=${query}`;
+        });
+      });
     });
   </script>
 

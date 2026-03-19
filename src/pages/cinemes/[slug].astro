@@ -10,7 +10,6 @@ import { fetchFilms } from '../../lib/filmcat';
 import { fetchTMDBPoster } from '../../lib/tmdb';
 import { cinemaSlug } from '../../lib/slug';
 import { CINEMA_URLS } from '../../lib/cinema-urls';
-import { sanitizeUrl } from '../../lib/sanitize';
 
 const { slug } = Astro.params;
 
@@ -56,9 +55,8 @@ await Promise.allSettled(
 );
 
 // ── Links ──
-const mapsUrl = sanitizeUrl(
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cinemaName}, ${cinemaCity}`)}`
-);
+const mapsQuery = `${cinemaName}, ${cinemaCity}`;
+const mapsWebUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}`;
 const webUrl = CINEMA_URLS[cinemaName] ?? null;
 
 // ── SEO ──
@@ -141,10 +139,11 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
 
           <div class="cinema-actions">
             <a
-              href={mapsUrl}
+              href={mapsWebUrl}
               target="_blank"
               rel="noopener noreferrer"
-              class="trailer-btn"
+              class="trailer-btn maps-link"
+              data-maps-query={mapsQuery}
               aria-label={`Com arribar a ${cinemaName}`}
             >
               <svg
@@ -218,4 +217,20 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
 
   <script type="application/ld+json" set:html={jsonLdStr} />
   <script type="application/ld+json" set:html={breadcrumbLdStr} />
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      document.querySelectorAll('.maps-link').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          const ua = navigator.userAgent;
+          const isIOS = /iPhone|iPad|iPod/i.test(ua);
+          const isAndroid = /Android/i.test(ua);
+          if (!isIOS && !isAndroid) return; // desktop: obre href en nova pestanya
+          e.preventDefault();
+          const query = encodeURIComponent((el as HTMLAnchorElement).dataset.mapsQuery ?? '');
+          window.location.href = isAndroid ? `geo:0,0?q=${query}` : `comgooglemaps://?q=${query}`;
+        });
+      });
+    });
+  </script>
 </Base>
