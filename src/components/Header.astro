@@ -71,9 +71,8 @@
 <script>
   document.addEventListener('astro:page-load', () => {
     document.querySelector('.logo-wrap')?.addEventListener('click', (e) => {
-      // Clear saved scroll + province so homepage always starts fresh
+      // Clear saved scroll position (province preference persists intentionally)
       sessionStorage.removeItem('filmcat_scroll');
-      sessionStorage.removeItem('filmcat_province');
 
       if (window.location.pathname === '/') {
         // Already on homepage: reset filters in place, scroll to top

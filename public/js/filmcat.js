@@ -266,7 +266,7 @@
       const link = e.target.closest('a[href^="/films/"]');
       if (link) {
         sessionStorage.setItem('filmcat_scroll', String(window.scrollY));
-        sessionStorage.setItem('filmcat_province', getActiveProvince ? getActiveProvince() : 'all');
+        localStorage.setItem('filmcat_province', getActiveProvince ? getActiveProvince() : 'all');
         return;
       }
       const card = e.target.closest('[data-film]');
@@ -450,15 +450,12 @@
       }
     }
 
-    // Restore province from sessionStorage if returning from a film detail page.
-    // Only consume (and remove) the value when the province filter bar is present on
-    // this page — otherwise leave it so the film detail page script can still read it.
-    const savedProvince = sessionStorage.getItem('filmcat_province');
+    // Restore province from localStorage (persists across sessions).
+    const savedProvince = localStorage.getItem('filmcat_province');
     if (
       savedProvince !== null &&
       document.querySelector('.filter-bar[data-filter-type="province"]')
     ) {
-      sessionStorage.removeItem('filmcat_province');
       activeProvince = savedProvince; // may be 'all' — that's correct too
     }
 
@@ -475,6 +472,7 @@
         const btn = e.target.closest('.filter-btn');
         if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
         activeProvince = btn.dataset.provinceFilter || 'all';
+        localStorage.setItem('filmcat_province', activeProvince);
         provinceBar.querySelectorAll('.filter-btn').forEach((b) => {
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });

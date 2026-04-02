@@ -567,7 +567,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
   <!-- Province-aware session grouping: reorders sessions when a province filter is active -->
   <script>
     document.addEventListener('astro:page-load', () => {
-      const savedProvince = sessionStorage.getItem('filmcat_province');
+      const savedProvince = localStorage.getItem('filmcat_province');
       if (!savedProvince || savedProvince === 'all') return;
 
       const grid = document.querySelector('.sessions-grid');
