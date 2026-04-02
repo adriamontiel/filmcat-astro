@@ -520,10 +520,27 @@
       '.filter-bar[data-filter-type="cinema-province"]'
     );
     if (cinemaProvinceBar) {
+      // Restore saved cinema province
+      const savedCinemaProvince = localStorage.getItem('filmcat_cinema_province');
+      if (savedCinemaProvince) {
+        const savedBtn = cinemaProvinceBar.querySelector(
+          `[data-cinema-province-filter="${savedCinemaProvince}"]`
+        );
+        if (savedBtn) {
+          cinemaProvinceBar.querySelectorAll('.filter-btn').forEach((b) => {
+            b.setAttribute('aria-pressed', b === savedBtn ? 'true' : 'false');
+          });
+          document.querySelectorAll('[data-cinema-province]').forEach((card) => {
+            card.hidden = card.dataset.cinemaProvince !== savedCinemaProvince;
+          });
+        }
+      }
+
       cinemaProvinceBar.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn) return;
         const selected = btn.dataset.cinemaProvinceFilter || 'all';
+        localStorage.setItem('filmcat_cinema_province', selected);
         cinemaProvinceBar.querySelectorAll('.filter-btn').forEach((b) => {
           b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
         });
