@@ -375,6 +375,12 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                       role="listitem"
                       data-province={cityToProvince(session.city)}
                       data-cinema={session.cinema}
+                      data-dates={JSON.stringify(
+                        session.times.map((t) => {
+                          const [d, m, y] = t.split('/');
+                          return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                        })
+                      )}
                     >
                       <div class="session-cinema-header">
                         <div>
@@ -405,23 +411,9 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                         </div>
                       </div>
                       <div
-                        class="session-times"
-                        role="group"
-                        aria-label={`Dies de projecció a ${session.cinema}`}
-                      >
-                        {session.times.map((time) => (
-                          <span
-                            class="session-time"
-                            aria-label={`${formatSessionDate(time)} a ${session.cinema}`}
-                          >
-                            {formatSessionDate(time)}
-                          </span>
-                        ))}
-                      </div>
-                      <div
-                        class="session-horaris"
+                        class="session-horaris-by-day"
                         aria-live="polite"
-                        aria-label={`Horaris d'avui a ${session.cinema}`}
+                        aria-label={`Horaris per dia a ${session.cinema}`}
                       />
                       <div class="session-actions">
                         <a
@@ -492,72 +484,99 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
   <script type="application/ld+json" set:html={jsonLdStr} />
   <script type="application/ld+json" set:html={breadcrumbLdStr} />
 
-  <!-- Horaris en temps real: fetch /api/horaris per a cada cinema de la pàgina -->
+  <!-- Horaris en temps real: fetch /api/horaris per cada dia de cada cinema -->
   <script define:vars={{ filmTitle: film.title }}>
     document.addEventListener('astro:page-load', async () => {
       const cards = [...document.querySelectorAll('.session-cinema[data-cinema]')];
       if (cards.length === 0) return;
 
-      // Mostra skeleton mentre carrega
+      // Skeleton per cada dia de cada card
       cards.forEach((card) => {
-        const container = card.querySelector('.session-horaris');
-        if (container)
-          container.innerHTML = '<span class="horaris-loading" aria-hidden="true"></span>';
+        const dates = JSON.parse(card.dataset.dates || '[]');
+        const container = card.querySelector('.session-horaris-by-day');
+        if (!container) return;
+        container.innerHTML = dates
+          .map(
+            () =>
+              '<div class="horaris-day-skeleton"><span class="horaris-loading" aria-hidden="true"></span></div>'
+          )
+          .join('');
       });
 
-      const today = new Date().toISOString().split('T')[0];
+      // Totes les dates úniques de la pàgina, en ordre
+      const allDates = [
+        ...new Set(cards.flatMap((card) => JSON.parse(card.dataset.dates || '[]'))),
+      ].sort();
       const cinemaNames = [...new Set(cards.map((el) => el.dataset.cinema))];
-
-      const params = new URLSearchParams({ film: filmTitle, data: today });
-      cinemaNames.forEach((name) => params.append('c', name));
+      const today = new Date().toISOString().split('T')[0];
 
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 7000);
+      const timer = setTimeout(() => controller.abort(), 10000);
 
       try {
-        const res = await fetch(`https://filmcat-api.vercel.app/api/horaris?${params}`, {
-          signal: controller.signal,
-        });
+        // Una request per dia, totes en paral·lel
+        const byDate = new Map(
+          await Promise.all(
+            allDates.map(async (date) => {
+              const params = new URLSearchParams({ film: filmTitle, data: date });
+              cinemaNames.forEach((name) => params.append('c', name));
+              const res = await fetch(`https://filmcat-api.vercel.app/api/horaris?${params}`, {
+                signal: controller.signal,
+              });
+              if (!res.ok) throw new Error('API error');
+              const { cinemes } = await res.json();
+              return [date, cinemes];
+            })
+          )
+        );
         clearTimeout(timer);
-        if (!res.ok) throw new Error('API error');
-        const { cinemes } = await res.json();
 
-        for (const result of cinemes) {
-          // Actualitza TOTES les cards del mateix cinema (pot repetir-se si el film té múltiples sessions)
-          const matchingCards = cards.filter((el) => el.dataset.cinema === result.cinema);
+        // Renderitza cada card amb tots els dies i horaris
+        for (const card of cards) {
+          const cinemaDates = JSON.parse(card.dataset.dates || '[]');
+          const cinemaName = card.dataset.cinema;
+          const container = card.querySelector('.session-horaris-by-day');
+          if (!container) continue;
 
-          for (const card of matchingCards) {
-            const container = card.querySelector('.session-horaris');
-            if (!container) continue;
+          let html = '';
+          for (const date of cinemaDates) {
+            const cinemes = byDate.get(date) || [];
+            const result = cinemes.find((c) => c.cinema === cinemaName);
+            const isToday = date === today;
 
-            if (result.status === 'ok' && result.sessions.length > 0) {
-              // Agrupa les sessions per versió (VCAT, VOS, etc.)
+            const [y, m, d] = date.split('-').map(Number);
+            const label = new Intl.DateTimeFormat('ca', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            }).format(new Date(y, m - 1, d));
+            const labelCap = label.charAt(0).toUpperCase() + label.slice(1);
+
+            html += `<div class="horaris-day${isToday ? ' horaris-day--today' : ''}">`;
+            html += `<div class="horaris-day-label">${isToday ? 'Avui, ' : ''}${labelCap}</div>`;
+
+            if (result?.status === 'ok' && result.sessions.length > 0) {
               const byVersion = new Map();
               for (const s of result.sessions) {
                 const ver = s.version || '';
                 if (!byVersion.has(ver)) byVersion.set(ver, []);
                 byVersion.get(ver).push(s.time);
               }
-              let html = '';
               for (const [ver, times] of byVersion) {
-                if (ver) {
-                  html += `<div class="horaris-version-label" aria-label="Versió ${ver}">${ver}</div>`;
-                }
-                const pills = times.map((t) => `<span class="horari-time">${t}</span>`).join('');
-                html += `<div class="horaris-row" role="group" aria-label="Horaris ${ver}">${pills}</div>`;
+                if (ver) html += `<div class="horaris-version-label">${ver}</div>`;
+                html += `<div class="horaris-row">${times.map((t) => `<span class="horari-time">${t}</span>`).join('')}</div>`;
               }
-              container.innerHTML = html;
-            } else {
-              // Sense horaris concrets — els botons SSR (Web oficial) ja estan visibles
-              container.innerHTML = '';
             }
+
+            html += '</div>';
           }
+          container.innerHTML = html;
         }
       } catch {
         clearTimeout(timer);
         // Fallback silenciós: elimina els skeletons
         cards.forEach((card) => {
-          const container = card.querySelector('.session-horaris');
+          const container = card.querySelector('.session-horaris-by-day');
           if (container) container.innerHTML = '';
         });
       }

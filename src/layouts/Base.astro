@@ -1431,9 +1431,29 @@ const {
         background: rgba(192, 57, 43, 0.13);
         border-color: rgba(192, 57, 43, 0.22);
       }
-      /* ── Horaris en temps real (filazero) ─────────────────────────────── */
-      .session-horaris {
-        min-height: 0;
+      /* ── Horaris per dia ──────────────────────────────────────────────── */
+      .session-horaris-by-day {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .horaris-day {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .horaris-day-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted, #888);
+      }
+      .horaris-day--today .horaris-day-label {
+        color: var(--gold, #d4af37);
+      }
+      .horaris-day-skeleton {
+        height: 30px;
       }
       /* Version label above the time pills (e.g. "VCAT") */
       .horaris-version-label {
@@ -1442,17 +1462,16 @@ const {
         letter-spacing: 1px;
         text-transform: uppercase;
         color: var(--gold, #d4af37);
-        margin-top: 14px;
-        margin-bottom: 5px;
+        margin-top: 6px;
+        margin-bottom: 3px;
+      }
+      .horaris-day:first-child .horaris-version-label {
+        margin-top: 0;
       }
       .horaris-row {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-      }
-      /* Quan no hi ha etiqueta de versió, el primer row necessita marge superior */
-      .session-horaris > .horaris-row:first-child {
-        margin-top: 14px;
       }
       .horari-time {
         display: inline-flex;
