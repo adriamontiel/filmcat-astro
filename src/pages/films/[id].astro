@@ -108,9 +108,6 @@ const versionLabel: Record<string, string> = {
   VOSE: 'Versió Original Subtitulada en Espanyol',
 };
 
-// Session count for this film (used in the sessions heading)
-const sessionCount = film.sessions.reduce((a, s) => a + s.times.length, 0);
-
 // Global stats for the footer (same as home page)
 const totalFilmCount = films.length;
 const totalCinemaCount = new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema))).size;
@@ -356,11 +353,7 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
         <!-- Sessions -->
         <div>
           <h2 class="film-section-title">
-            {
-              film.sessions.length > 0
-                ? `Sessions disponibles — ${sessionCount} horaris`
-                : 'Sessions'
-            }
+            {film.sessions.length > 0 ? 'Sessions disponibles' : 'Sessions'}
           </h2>
 
           {
