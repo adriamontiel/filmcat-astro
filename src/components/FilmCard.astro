@@ -57,6 +57,17 @@ function premiereCompact(raw: string | undefined): string | null {
 }
 const premiereLabel = isUpcoming ? premiereCompact(film.premiere) : null;
 
+function isPremiereFuture(raw: string | undefined): boolean {
+  if (!raw || raw === '--') return false;
+  const parts = raw.split('/');
+  if (parts.length !== 3) return false;
+  const [d, m, y] = parts.map(Number);
+  if (!d || !m || !y) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(y, m - 1, d) >= today;
+}
+
 const VERSION_LABELS: Record<string, string> = {
   VDC: 'Versió Doblada al Català',
   VD: 'Versió Doblada al Català', // legacy alias
@@ -151,7 +162,7 @@ const filmJson = JSON.stringify({
     <div class="card-title">{film.title}</div>
     <div class="card-meta">
       {
-        isUpcoming && premiereLabel && (
+        isUpcoming && premiereLabel && isPremiereFuture(film.premiere) && (
           <span class="tag tag-premiere" aria-label={`Estrena: ${film.premiere}`}>
             {premiereLabel}
           </span>
