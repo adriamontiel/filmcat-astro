@@ -1086,46 +1086,82 @@ const {
         outline: 3px solid var(--red-focus);
         outline-offset: 2px;
       }
-      /* Poster strip */
+      /* Poster gallery */
       .cinema-card-posters {
+        position: relative;
         display: flex;
-        height: 88px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 160px;
+        padding: 0 14px;
         overflow: hidden;
         flex-shrink: 0;
         background: var(--bg3);
       }
+      .cinema-card-posters::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: var(--backdrop-url);
+        background-size: cover;
+        background-position: center;
+        filter: blur(12px) brightness(0.35) saturate(1.4);
+        transform: scale(1.1);
+        z-index: 0;
+      }
+      .cinema-card-posters::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 20%, rgba(0, 0, 0, 0.7) 100%);
+        z-index: 1;
+      }
       .cinema-card-poster {
-        flex: 1;
+        position: relative;
+        z-index: 2;
+        flex: none;
+        width: 58px;
+        aspect-ratio: 2 / 3;
+        border-radius: 5px;
         overflow: hidden;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
       }
       .cinema-card-poster img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
-        transition: transform 0.4s ease;
-      }
-      .cinema-card:hover .cinema-card-poster img {
-        transform: scale(1.06);
       }
       .cinema-card-poster-placeholder {
-        flex: 1;
+        position: relative;
+        z-index: 2;
+        flex: none;
+        width: 58px;
+        aspect-ratio: 2 / 3;
+        border-radius: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg3);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
       }
       .cinema-card-poster-extra {
-        flex-shrink: 0;
-        width: 38px;
-        background: var(--surface2);
+        position: relative;
+        z-index: 2;
+        flex: none;
+        width: 58px;
+        aspect-ratio: 2 / 3;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         font-weight: 700;
-        color: var(--muted);
-        border-left: 1px solid var(--border);
+        color: rgba(255, 255, 255, 0.7);
       }
       /* Card body */
       .cinema-card-body {
@@ -1141,15 +1177,6 @@ const {
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 4px;
-      }
-      .cinema-films-count {
-        font-size: 0.7rem;
-        color: var(--red-light);
-        font-weight: 500;
-      }
-      .cinema-films-count::before {
-        content: '\25B6\FE0E\00A0';
-        font-size: 0.6rem;
       }
       /* ── MODAL ── */
       .modal-backdrop {

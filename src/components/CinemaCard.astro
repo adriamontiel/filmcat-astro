@@ -1,5 +1,5 @@
 ---
-// CinemaCard.astro — cinema listing card with poster strip
+// CinemaCard.astro — cinema listing card with poster gallery
 import type { Cinema } from '../lib/types';
 import { cinemaSlug } from '../lib/slug';
 
@@ -13,6 +13,7 @@ const { cinema, province, topPosters = [] } = Astro.props;
 const filmCount = cinema.films ?? 0;
 const slug = cinemaSlug(cinema.name);
 const extraCount = filmCount > 3 ? filmCount - 3 : 0;
+const backdropUrl = topPosters[0] ?? null;
 ---
 
 <a
@@ -21,8 +22,12 @@ const extraCount = filmCount > 3 ? filmCount - 3 : 0;
   aria-label={`${cinema.name}, ${cinema.city}, ${filmCount} ${filmCount === 1 ? 'pel·lícula' : 'pel·lícules'} en català`}
   data-cinema-province={province}
 >
-  <!-- ── POSTER STRIP ── -->
-  <div class="cinema-card-posters" aria-hidden="true">
+  <!-- ── POSTER GALLERY ── -->
+  <div
+    class="cinema-card-posters"
+    aria-hidden="true"
+    style={backdropUrl ? `--backdrop-url: url('${backdropUrl}')` : ''}
+  >
     {
       topPosters.length > 0 ? (
         topPosters.map((url) => (
@@ -59,13 +64,6 @@ const extraCount = filmCount > 3 ? filmCount - 3 : 0;
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
         {cinema.city}
-      </div>
-      <div
-        class="cinema-films-count"
-        aria-label={`${filmCount} ${filmCount === 1 ? 'pel·lícula' : 'pel·lícules'}`}
-      >
-        {filmCount}
-        {filmCount === 1 ? 'pel·lícula' : 'pel·lícules'}
       </div>
     </div>
   </div>
