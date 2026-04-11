@@ -74,7 +74,7 @@ const cinemaTopPosters: Record<string, string[]> = {};
 for (const [name, filmSessions] of Object.entries(cinemaFilmsMap)) {
   cinemaTopPosters[name] = filmSessions
     .sort((a, b) => b.sessionCount - a.sessionCount)
-    .slice(0, 3)
+    .slice(0, filmSessions.length > 4 ? 3 : 4)
     .filter((cf) => cf.film.posterPath)
     .map((cf) => `https://image.tmdb.org/t/p/w185${cf.film.posterPath}`);
 }
