@@ -1748,6 +1748,10 @@ const {
         .hamburger {
           display: flex;
         }
+        /* Header fosc sòlid quan el menú mòbil és obert */
+        body:has(.mobile-nav.open) header {
+          background: rgba(10, 10, 12, 0.98);
+        }
         /* Push search button right so [🔍][MENU] sit together */
         .search-btn {
           margin-left: auto;
