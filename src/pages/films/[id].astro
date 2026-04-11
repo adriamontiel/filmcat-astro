@@ -54,12 +54,15 @@ const description = film.synopsis
 const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
 const ri = ratingInfo(film.rating);
 
-// Clean first language: "català (60 %); castellà" → "català"
+// Clean first language: "català (60 %); castellà" → "Català"
 const cleanLanguage = film.language
-  ? film.language
-      .split(';')[0]
-      .replace(/\s*\(\d+\s*%\)/, '')
-      .trim()
+  ? (() => {
+      const s = film.language
+        .split(';')[0]
+        .replace(/\s*\(\d+\s*%\)/, '')
+        .trim();
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    })()
   : '';
 
 // Format session date to Catalan: "17/03/2026" → "Dimarts, 17 de març"
