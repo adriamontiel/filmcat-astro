@@ -132,7 +132,7 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
           <p class="cinema-subtitle">
             {
               cinemaFilms.length > 0
-                ? `${cinemaFilms.length} pel·lícula${cinemaFilms.length !== 1 ? 's' : ''} en català aquesta setmana`
+                ? `${cinemaFilms.length} ${cinemaFilms.length !== 1 ? 'pel·lícules' : 'pel·lícula'} en català aquesta setmana`
                 : 'Cinema en català'
             }
           </p>
