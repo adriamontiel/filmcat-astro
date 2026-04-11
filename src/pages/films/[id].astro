@@ -556,16 +556,8 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
             html += `<div class="horaris-day-label">${isToday ? 'Avui, ' : ''}${labelCap}</div>`;
 
             if (result?.status === 'ok' && result.sessions.length > 0) {
-              const byVersion = new Map();
-              for (const s of result.sessions) {
-                const ver = s.version || '';
-                if (!byVersion.has(ver)) byVersion.set(ver, []);
-                byVersion.get(ver).push(s.time);
-              }
-              for (const [ver, times] of byVersion) {
-                if (ver) html += `<div class="horaris-version-label">${ver}</div>`;
-                html += `<div class="horaris-row">${times.map((t) => `<span class="horari-time">${t}</span>`).join('')}</div>`;
-              }
+              const times = [...new Set(result.sessions.map((s) => s.time))].sort();
+              html += `<div class="horaris-row">${times.map((t) => `<span class="horari-time">${t}</span>`).join('')}</div>`;
             }
 
             html += '</div>';

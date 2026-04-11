@@ -1435,38 +1435,26 @@ const {
       .session-horaris-by-day {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 20px;
       }
       .horaris-day {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
       }
       .horaris-day-label {
-        font-size: 0.65rem;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--text-muted, #888);
+        font-size: 0.72rem;
+        font-weight: 400;
+        letter-spacing: 0;
+        color: var(--text, #fff);
+        opacity: 0.5;
       }
       .horaris-day--today .horaris-day-label {
-        color: var(--gold, #d4af37);
+        font-weight: 700;
+        opacity: 1;
       }
       .horaris-day-skeleton {
         height: 30px;
-      }
-      /* Version label above the time pills (e.g. "VCAT") */
-      .horaris-version-label {
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: var(--gold, #d4af37);
-        margin-top: 6px;
-        margin-bottom: 3px;
-      }
-      .horaris-day:first-child .horaris-version-label {
-        margin-top: 0;
       }
       .horaris-row {
         display: flex;
