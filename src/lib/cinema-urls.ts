@@ -111,4 +111,6 @@ export const CINEMA_URLS: Record<string, string> = {
   'Cinema Edison de Granollers': 'https://cinemaedison.cat',
   "Ateneu Cinema d'Igualada": 'https://ateneucinema.cat',
   'Cinema Catalunya de Ribes de Freser': 'https://amicscinevallderibes.com',
+  'Biblioteca del Fondo de Santa Coloma de Gramenet':
+    'https://www.gramenet.cat/ajuntament/arees-municipals/biblioteques-de-santa-coloma/biblioteca-del-fondo/',
 };
