@@ -109,7 +109,9 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
       <div class="cinema-hero">
         <div class="cinema-hero-bg" aria-hidden="true"></div>
         <div class="cinema-hero-content">
-          <a href="/#cinemes" class="film-back-link" aria-label="Tornar als cinemes"> ← Cinemes </a>
+          <a href="/#cinemes" class="film-back-link" aria-label="Tornar als cinemes"> ← CINEMES </a>
+
+          <h1 class="cinema-title">{cinemaName}</h1>
 
           <div class="cinema-hero-eyebrow">
             <svg
@@ -126,8 +128,6 @@ const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\
             </svg>
             {cinemaCity}
           </div>
-
-          <h1 class="cinema-title">{cinemaName}</h1>
 
           <p class="cinema-subtitle">
             {
