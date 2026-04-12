@@ -1,7 +1,7 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
 import Analytics from '@vercel/analytics/astro';
-import { rootCSS } from '../lib/design-tokens';
+import '../styles/tokens.css';
 import '../styles/components.css';
 
 interface Props {
@@ -63,7 +63,6 @@ const {
     <link rel="manifest" href="/site.webmanifest" />
     {canonical && <link rel="canonical" href={canonical} />}
     <ViewTransitions />
-    <style is:inline set:html={rootCSS()}></style>
     <style is:global>
       /* ── SELF-HOSTED FONTS ── */
       @font-face {

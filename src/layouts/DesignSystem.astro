@@ -1,5 +1,5 @@
 ---
-import { rootCSS } from '../lib/design-tokens';
+import '../styles/tokens.css';
 import '../styles/components.css';
 
 interface Props {
@@ -19,8 +19,11 @@ const path = Astro.url.pathname;
     <meta name="robots" content="noindex, nofollow" />
     <title>{title} — Filmcat Design System</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <style is:inline set:html={rootCSS({ '--sidebar-w': '220px' })}></style>
     <style is:global>
+      /* ── DESIGN SYSTEM–ONLY TOKENS ── */
+      :root {
+        --sidebar-w: 220px;
+      }
       /* ── FONTS ── */
       @font-face {
         font-family: 'Bebas Neue';

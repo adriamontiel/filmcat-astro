@@ -1,0 +1,44 @@
+/*
+ * tokens.css — CSS Custom Properties (design tokens) for Filmcat.
+ *
+ * Single source of truth for CSS variables. Imported by:
+ *   src/layouts/Base.astro         → filmcat.app
+ *   src/layouts/DesignSystem.astro → filmcat.app/design/*
+ *
+ * ⚠️  If you change a value here, also update src/lib/design-tokens.ts
+ *     so the design system documentation stays in sync.
+ */
+
+:root {
+  /* ── ACCENT VERMELL (marca, accions, focus) ── */
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --red-dark: #922b21;
+  --red-focus: #ff6b5b;
+
+  /* ── FONS (profunditat sense color) ── */
+  --bg: #0a0a0c;
+  --bg2: #111115;
+  --bg3: #18181e;
+
+  /* ── SUPERFÍCIES (cards, modals) ── */
+  --surface: #1e1e26;
+  --surface2: #252530;
+
+  /* ── ESTRUCTURAL ── */
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* ── TEXT (jerarquia per opacitat) ── */
+  --text: #f0f0f0;
+  --text-mid: rgba(240, 240, 240, 0.72);
+  --muted: rgba(255, 255, 255, 0.45);
+
+  /* ── ACCENT DAURAT (horaris i VO — ús semàntic exclusiu) ── */
+  --gold: #e8c97a;
+
+  /* ── ESPAIAT & GEOMETRIA ── */
+  --px: clamp(16px, 4vw, 48px);
+  --r-card: 12px;
+  --r-modal: 20px;
+  --nav-h: 64px;
+}
