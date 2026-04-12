@@ -1,0 +1,206 @@
+---
+export const prerender = true;
+import DesignSystem from '../../layouts/DesignSystem.astro';
+---
+
+<DesignSystem title="Introducció" section="intro">
+  <h1 class="ds-page-title">Design System</h1>
+  <p class="ds-page-desc">
+    El catàleg visual de tots els blocs de construcció de Filmcat. Aquí trobaràs els tokens de
+    disseny, els components reutilitzables i els patrons compostos que conformen la interfície.
+  </p>
+
+  <div class="ds-section">
+    <p class="ds-section-title">Jerarquia</p>
+    <div class="hierarchy">
+      <div class="hier-block">
+        <div class="hier-icon">◈</div>
+        <div class="hier-content">
+          <div class="hier-title">Tokens</div>
+          <div class="hier-desc">
+            Les decisions de disseny més bàsiques: colors, tipografia, espaiat. Definits com a CSS
+            Custom Properties i compartits per tot el sistema.
+          </div>
+          <a href="/design/tokens" class="hier-link">Veure tokens →</a>
+        </div>
+      </div>
+      <div class="hier-arrow">↓</div>
+      <div class="hier-block">
+        <div class="hier-icon">◧</div>
+        <div class="hier-content">
+          <div class="hier-title">Components</div>
+          <div class="hier-desc">
+            Elements d'interfície reutilitzables construïts amb tokens. Badges, pills d'horari,
+            botons, etiquetes. Cadascun té un ús semàntic clar.
+          </div>
+          <a href="/design/components" class="hier-link">Veure components →</a>
+        </div>
+      </div>
+      <div class="hier-arrow">↓</div>
+      <div class="hier-block">
+        <div class="hier-icon">⊞</div>
+        <div class="hier-content">
+          <div class="hier-title">Patrons</div>
+          <div class="hier-desc">
+            Composicions de components que resolen casos d'ús recurrents. La graella de sessions,
+            les estadístiques del hero, la cerca.
+          </div>
+          <a href="/design/patterns" class="hier-link">Veure patrons →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <div class="ds-section">
+    <p class="ds-section-title">Principis</p>
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-title">Dark-first</div>
+        <div class="principle-desc">
+          Filmcat és una aplicació de cinema — el mode fosc no és opcional, és el disseny base. Tots
+          els tokens, contrastos i components estan optimitzats per fons foscos.
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-title">Contrast accessible</div>
+        <div class="principle-desc">
+          Tots els colors de text passen WCAG AA (≥4.5:1 per a text petit, ≥3:1 per a text gran).
+          Els badges, pills i badges de rating han estat validats individualment.
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-title">Jerarquia per pes, no per color</div>
+        <div class="principle-desc">
+          L'ordre d'importància visual s'estableix a través de font-weight i opacitat. El color
+          daurat (gold) té un ús semàntic concret: horaris. El vermell: accions i accents.
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle-title">Tipografia mixta</div>
+        <div class="principle-desc">
+          Tres famílies amb rols clars: Bebas Neue per a títols d'impacte, Outfit per al cos de
+          text, Space Mono per a dades numèriques (horaris, codis).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <div class="ds-section">
+    <p class="ds-section-title">Estadístiques del sistema</p>
+    <div class="ds-stats">
+      <div class="ds-stat">
+        <div class="ds-stat-num">17</div>
+        <div class="ds-stat-label">Tokens de color</div>
+      </div>
+      <div class="ds-stat">
+        <div class="ds-stat-num">3</div>
+        <div class="ds-stat-label">Famílies tipogràfiques</div>
+      </div>
+      <div class="ds-stat">
+        <div class="ds-stat-num">6</div>
+        <div class="ds-stat-label">Tokens d'espaiat</div>
+      </div>
+      <div class="ds-stat">
+        <div class="ds-stat-num">5</div>
+        <div class="ds-stat-label">Components Astro</div>
+      </div>
+    </div>
+  </div>
+</DesignSystem>
+
+<style>
+  .hierarchy {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 520px;
+  }
+  .hier-block {
+    display: flex;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .hier-icon {
+    font-size: 1.4rem;
+    color: var(--red);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .hier-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .hier-desc {
+    font-size: 0.8rem;
+    color: var(--text-mid);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .hier-link {
+    font-size: 0.78rem;
+    color: var(--red-focus);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .hier-link:hover {
+    color: var(--red-light);
+  }
+  .hier-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.2rem;
+    padding: 6px 0;
+    margin-left: 28px;
+  }
+  .principles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .principle {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .principle-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .principle-desc {
+    font-size: 0.78rem;
+    color: var(--text-mid);
+    line-height: 1.55;
+  }
+  .ds-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .ds-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ds-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    color: var(--red);
+    line-height: 1;
+  }
+  .ds-stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>
