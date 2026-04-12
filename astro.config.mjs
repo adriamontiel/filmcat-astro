@@ -7,6 +7,7 @@ export default defineConfig({
   output: 'server',
   adapter: vercel(),
   site: 'https://www.filmcat.app',
+  trailingSlash: 'ignore',
 
   // Allow Astro's <Image> to optimise remote TMDB posters (→ WebP, correct sizing)
   image: {
