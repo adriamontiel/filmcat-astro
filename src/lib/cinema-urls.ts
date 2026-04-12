@@ -115,4 +115,10 @@ export const CINEMA_URLS: Record<string, string> = {
   "L'Esbarjo Verdi de Cardedeu": 'https://www.cinemaesbarjo.cat/',
   'Biblioteca del Fondo de Santa Coloma de Gramenet':
     'https://www.gramenet.cat/ajuntament/arees-municipals/biblioteques-de-santa-coloma/biblioteca-del-fondo/',
+  'CineCiutat de Palma': 'https://www.cineciutat.org/ca',
+  'Cinemes Amposta': 'https://www.amposta.info/cine.asp',
+  'Manacor Aficine': 'https://aficine.com/cine/manacor/',
+  "Cine Club Utiye d'Ontinyent - Cineapolis El Teler": 'https://www.cineclubutiye.com/',
+  'Cinema Casal Montblanquí': 'https://circusa.com/montblanc/',
+  'Cinema Casal de Gràcia de Manlleu': 'https://ciclegaudi.cat/sales/manlleu/',
 };
