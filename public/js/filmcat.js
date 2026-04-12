@@ -531,7 +531,9 @@
             b.setAttribute('aria-pressed', b === savedBtn ? 'true' : 'false');
           });
           document.querySelectorAll('[data-cinema-province]').forEach((card) => {
-            card.hidden = card.dataset.cinemaProvince !== savedCinemaProvince;
+            const show =
+              savedCinemaProvince === 'all' || card.dataset.cinemaProvince === savedCinemaProvince;
+            card.hidden = !show;
           });
         }
       }
