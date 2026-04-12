@@ -63,7 +63,7 @@ const {
     <link rel="manifest" href="/site.webmanifest" />
     {canonical && <link rel="canonical" href={canonical} />}
     <ViewTransitions />
-    <style set:html={rootCSS()}></style>
+    <style is:inline set:html={rootCSS()}></style>
     <style is:global>
       /* ── SELF-HOSTED FONTS ── */
       @font-face {
