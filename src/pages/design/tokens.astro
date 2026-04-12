@@ -1,0 +1,231 @@
+---
+import DesignSystem from '../../layouts/DesignSystem.astro';
+import { tokens, colorGroups, spacingKeys } from '../../lib/design-tokens';
+
+// Build spacing tokens array from keys + token data
+const spacingTokens = spacingKeys.map((key) => ({ name: key, ...tokens[key] }));
+---
+
+<DesignSystem title="Tokens" section="tokens">
+  <h1 class="ds-page-title">Tokens</h1>
+  <p class="ds-page-desc">
+    Els tokens són les decisions de disseny més fonamentals, expressades com a CSS Custom
+    Properties. Canviar un token afecta tot el sistema de forma coherent.
+  </p>
+
+  <!-- COLORS -->
+  <div id="colors" class="ds-section">
+    <p class="ds-section-title">Colors</p>
+
+    {
+      colorGroups.map((group) => (
+        <div class="color-group">
+          <div class="color-group-header">
+            <span class="color-group-label">{group.label}</span>
+            <span class="color-group-desc">{group.desc}</span>
+          </div>
+          <div class="ds-swatch-grid">
+            {group.keys.map((key) => {
+              const token = tokens[key];
+              return (
+                <div class="ds-swatch">
+                  <div class="ds-swatch-color" style={`background: ${token.value};`} />
+                  <div class="ds-swatch-info">
+                    <span class="ds-swatch-name">{key}</span>
+                    <span class="ds-swatch-hex">{token.value}</span>
+                    <span class="ds-swatch-desc">{token.description}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- TIPOGRAFIA -->
+  <div id="tipografia" class="ds-section">
+    <p class="ds-section-title">Tipografia</p>
+    <p class="type-intro">
+      Tres famílies amb rols semàntics clars. Cap font s'usa de forma intercanviable.
+    </p>
+
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <span class="ds-type-meta-label">Bebas Neue</span>
+        <span class="ds-type-meta-label">Display / Títols</span>
+      </div>
+      <div class="ds-type-specimen">
+        <div
+          style="font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1; letter-spacing: 0.04em; color: var(--text);"
+        >
+          Filmcat
+        </div>
+        <div
+          style="font-size: 0.72rem; color: var(--muted); margin-top: 6px; font-family: 'Outfit', sans-serif;"
+        >
+          Títols de pàgina, títols de film, headings de secció grans
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <span class="ds-type-meta-label">Outfit</span>
+        <span class="ds-type-meta-label">Body / UI</span>
+      </div>
+      <div class="ds-type-specimen">
+        <div style="font-family: 'Outfit', sans-serif;">
+          <div style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px;">
+            Cinemes Sant Cugat
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 400; color: var(--text-mid);">
+            Sessions disponibles per al proper cap de setmana
+          </div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 4px;">
+            Sant Cugat del Vallès
+          </div>
+        </div>
+        <div
+          style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; font-family: 'Outfit';"
+        >
+          Tot el text de cos, metadades, navegació, botons, labels
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-type-row">
+      <div class="ds-type-meta">
+        <span class="ds-type-meta-label">Space Mono</span>
+        <span class="ds-type-meta-label">Dades / Codi</span>
+      </div>
+      <div class="ds-type-specimen">
+        <div
+          style="font-family: 'Space Mono', monospace; display: flex; gap: 8px; flex-wrap: wrap;"
+        >
+          <span
+            style="padding: 5px 11px; border-radius: 8px; background: rgba(212,175,55,.1); border: 1.5px solid rgba(212,175,55,.25); font-size: 0.85rem; font-weight: 700; color: var(--text);"
+            >16:00</span
+          >
+          <span
+            style="padding: 5px 11px; border-radius: 8px; background: rgba(212,175,55,.1); border: 1.5px solid rgba(212,175,55,.25); font-size: 0.85rem; font-weight: 700; color: var(--text);"
+            >18:30</span
+          >
+          <span
+            style="padding: 5px 11px; border-radius: 8px; background: rgba(212,175,55,.1); border: 1.5px solid rgba(212,175,55,.25); font-size: 0.85rem; font-weight: 700; color: var(--text);"
+            >21:00</span
+          >
+        </div>
+        <div
+          style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; font-family: 'Outfit';"
+        >
+          Horaris, tokens CSS, codi, dades numèriques tabulars
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- ESPAIAT & RADIS -->
+  <div id="espaiat" class="ds-section">
+    <p class="ds-section-title">Espaiat & Radis</p>
+    <p class="type-intro">
+      Tokens de geometria i espai. La majoria són valors fixos per garantir consistència.
+    </p>
+
+    <div class="spacing-table">
+      {
+        spacingTokens.map((t) => (
+          <div class="spacing-row">
+            <div class="spacing-name">{t.name}</div>
+            <div class="spacing-value">{t.value}</div>
+            <div class="spacing-visual">
+              {t.name === '--px' && (
+                <div
+                  class="spacing-bar"
+                  style="width: 80px; height: 10px; background: rgba(192,57,43,.35); border: 1px solid rgba(192,57,43,.5); border-radius: 2px;"
+                />
+              )}
+              {t.name === '--r-card' && (
+                <div style="width: 56px; height: 30px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;" />
+              )}
+              {t.name === '--r-modal' && (
+                <div style="width: 56px; height: 30px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;" />
+              )}
+              {t.name === '--nav-h' && (
+                <div style="width: 56px; height: 14px; background: var(--bg2); border: 1px solid var(--border);" />
+              )}
+            </div>
+            <div class="spacing-desc">{t.description}</div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</DesignSystem>
+
+<style>
+  .color-group {
+    margin-bottom: 32px;
+  }
+  .color-group-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .color-group-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .color-group-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .type-intro {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    margin-bottom: 20px;
+  }
+  .spacing-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .spacing-row {
+    display: grid;
+    grid-template-columns: 130px 200px 80px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spacing-row:last-child {
+    border-bottom: none;
+  }
+  .spacing-row:nth-child(odd) {
+    background: var(--surface);
+  }
+  .spacing-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--gold);
+  }
+  .spacing-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-mid);
+  }
+  .spacing-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>

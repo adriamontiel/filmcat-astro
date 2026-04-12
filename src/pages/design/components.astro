@@ -1,0 +1,274 @@
+---
+import DesignSystem from '../../layouts/DesignSystem.astro';
+import FilmCard from '../../components/FilmCard.astro';
+import CinemaCard from '../../components/CinemaCard.astro';
+import { mockFilms, mockCinemas } from '../../lib/mock-data';
+---
+
+<DesignSystem title="Components" section="components">
+  <h1 class="ds-page-title">Components</h1>
+  <p class="ds-page-desc">
+    Elements d'interfície reutilitzables. Cada component té un ús semàntic clar i es construeix
+    sobre els tokens del sistema.
+  </p>
+
+  <!-- BADGES -->
+  <div id="badges" class="ds-section">
+    <p class="ds-section-title">Badges</p>
+
+    <p class="comp-desc">
+      Etiquetes compactes de classificació. S'usen per a metadata de pel·lícules: versió
+      lingüística, edat recomanada i informació d'estrena.
+    </p>
+
+    <div class="ds-component-label">Versió lingüística</div>
+    <div class="ds-canvas">
+      <span class="badge">VDC</span>
+      <span class="badge">VD</span>
+      <span class="badge">VO</span>
+      <span class="badge vo">VOS</span>
+      <span class="badge vo">VOSC</span>
+    </div>
+    <pre
+      class="ds-code">&lt;span class="badge"&gt;VDC&lt;/span&gt;
+&lt;span class="badge vo"&gt;VOSC&lt;/span&gt;</pre>
+
+    <div class="ds-component-label">Rating (edat recomanada)</div>
+    <div class="ds-canvas">
+      <span class="badge rating">TP</span>
+      <span class="badge rating">+7</span>
+      <span class="badge rating mid">+10</span>
+      <span class="badge rating mid">+12</span>
+      <span class="badge rating high">+16</span>
+      <span class="badge rating high">+18</span>
+    </div>
+    <pre
+      class="ds-code">&lt;span class="badge rating"&gt;TP&lt;/span&gt;        &lt;!-- verd: TP, +3, +7 --&gt;
+&lt;span class="badge rating mid"&gt;+12&lt;/span&gt;   &lt;!-- ambre: +10, +12 --&gt;
+&lt;span class="badge rating high"&gt;+16&lt;/span&gt;  &lt;!-- taronja: +16, +18 --&gt;</pre>
+
+    <div class="comp-note">
+      Els colors de rating estan validats WCAG AA. Verd: 5.0:1 · Ambre: 6.4:1 · Taronja: 4.6:1
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- TAGS -->
+  <div id="tags" class="ds-section">
+    <p class="ds-section-title">Tags</p>
+
+    <p class="comp-desc">
+      Etiquetes de metadades secundàries. Menys prominents que els badges, s'usen per a gènere,
+      idioma o informació contextual.
+    </p>
+
+    <div class="ds-component-label">Tag neutral</div>
+    <div class="ds-canvas">
+      <span class="tag">Acció</span>
+      <span class="tag">Drama</span>
+      <span class="tag">Animació</span>
+      <span class="tag">Català</span>
+    </div>
+
+    <div class="ds-component-label">Tag estrena (premiere)</div>
+    <div class="ds-canvas">
+      <span class="tag tag-premiere">Estrena</span>
+      <span class="tag tag-premiere">Pròximament</span>
+    </div>
+    <pre
+      class="ds-code">&lt;span class="tag"&gt;Drama&lt;/span&gt;
+&lt;span class="tag tag-premiere"&gt;Estrena&lt;/span&gt;</pre>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- HORARI PILLS -->
+  <div id="pills" class="ds-section">
+    <p class="ds-section-title">Horari Pills</p>
+
+    <p class="comp-desc">
+      Pills per mostrar horaris de sessions. Usen <strong>Space Mono</strong> (monospace) per garantir
+      amplades consistents en temps tabulars, i el <strong>color daurat</strong> com a identificador semàntic
+      d'horari.
+    </p>
+
+    <div class="ds-component-label">Pills d'horari</div>
+    <div class="ds-canvas dark padded-v">
+      <span class="horari-time">16:00</span>
+      <span class="horari-time">18:30</span>
+      <span class="horari-time">20:15</span>
+      <span class="horari-time">22:45</span>
+    </div>
+    <pre
+      class="ds-code">&lt;span class="horari-time"&gt;16:00&lt;/span&gt;
+&lt;span class="horari-time"&gt;18:30&lt;/span&gt;</pre>
+
+    <div class="comp-note">
+      El color daurat (<code>--gold: #e8c97a</code>) és d'ús exclusiu per a horaris. No s'usa per a
+      decoració genèrica.
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- BOTONS -->
+  <div id="botons" class="ds-section">
+    <p class="ds-section-title">Botons</p>
+
+    <p class="comp-desc">
+      Botons d'acció contextual de les sessions de cinema. Usen fons translúcid sobre superfície
+      fosca.
+    </p>
+
+    <div class="ds-component-label">Botó d'acció (session-action-btn)</div>
+    <div class="ds-canvas dark padded-v">
+      <a class="trailer-btn session-action-btn" href="#">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle
+            cx="12"
+            cy="10"
+            r="3"></circle>
+        </svg>
+        Com arribar
+      </a>
+      <a class="trailer-btn session-action-btn" href="#">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline
+            points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        Web oficial
+      </a>
+    </div>
+    <pre
+      class="ds-code">&lt;a class="trailer-btn session-action-btn" href="..."&gt;
+  Com arribar
+&lt;/a&gt;</pre>
+
+    <div class="comp-note">
+      <code>.session-action-btn</code> és una variant compacta de <code>.trailer-btn</code>. Hereda
+      el display i la transició de la classe base.
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- FEEDBACK -->
+  <div id="feedback" class="ds-section">
+    <p class="ds-section-title">Feedback & Estats</p>
+
+    <p class="comp-desc">Components que comuniquen estat: contingut buit, càrrega en curs.</p>
+
+    <div class="ds-component-label">Missatge d'estat buit</div>
+    <div class="ds-canvas">
+      <p class="status-msg">Properament — Sessions pendent de confirmar</p>
+    </div>
+    <pre
+      class="ds-code">&lt;p class="status-msg"&gt;Properament — Sessions pendent de confirmar&lt;/p&gt;</pre>
+
+    <div class="ds-component-label">Skeleton (càrrega)</div>
+    <div class="ds-canvas dark" style="flex-direction: column; gap: 8px;">
+      <div class="skeleton" style="height: 180px; width: 100%; border-radius: 12px;"></div>
+      <div class="skeleton" style="height: 20px; width: 60%;"></div>
+      <div class="skeleton" style="height: 16px; width: 40%;"></div>
+    </div>
+    <pre class="ds-code">&lt;div class="skeleton" style="height: 180px;"&gt;&lt;/div&gt;</pre>
+
+    <div class="comp-note">
+      El skeleton usa un gradient animat entre <code>--surface</code> i <code>--surface2</code>.
+      L'animació respecta <code>prefers-reduced-motion</code>.
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- FILM CARD -->
+  <div id="filmcard" class="ds-section">
+    <p class="ds-section-title">Film Card</p>
+    <p class="comp-desc">
+      Component real <code>FilmCard.astro</code> renderitzat amb dades mock. Qualsevol canvi al component
+      o al seu CSS es reflecteix aquí automàticament.
+    </p>
+
+    <div class="ds-component-label">Pel·lícula amb sessions (VDC)</div>
+    <div class="ds-canvas dark" style="align-items: flex-start; padding: 24px;">
+      <div style="width: 215px;">
+        <FilmCard film={mockFilms[0]} />
+      </div>
+    </div>
+
+    <div class="ds-component-label" style="margin-top: 20px;">
+      Pròxima estrena (VOSC, sense sessions)
+    </div>
+    <div class="ds-canvas dark" style="align-items: flex-start; padding: 24px;">
+      <div style="width: 215px;">
+        <FilmCard film={mockFilms[1]} />
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-divider"></div>
+
+  <!-- CINEMA CARD -->
+  <div id="cinemacard" class="ds-section">
+    <p class="ds-section-title">Cinema Card</p>
+    <p class="comp-desc">
+      Component real <code>CinemaCard.astro</code> renderitzat amb dades mock. Sense posters TMDB — mostra
+      l'estat de fons neutre.
+    </p>
+
+    <div class="ds-canvas dark" style="padding: 24px; max-width: 320px;">
+      <CinemaCard cinema={mockCinemas[0]} province="Barcelona" />
+    </div>
+  </div>
+</DesignSystem>
+
+<style>
+  .comp-desc {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .comp-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--bg2);
+    border-left: 2px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .comp-note code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+  }
+  strong {
+    color: var(--text);
+  }
+  code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+  }
+</style>
