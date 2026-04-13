@@ -106,7 +106,7 @@ export const CINEMA_URLS: Record<string, string> = {
   'Cines Lys de València': 'https://cineslys.com',
   'Sala Zazie de Vilafranca del Penedès - CineClub Vilafranca': 'https://cineclubvila.cat',
   "Cinema Rambla de l'Art de Cambrils": 'https://www.rambladelart-cambrils.com',
-  'Cine París de Solsona': 'https://www.cineparis.cat',
+  'Cine París de Solsona': 'https://circusa.com/ca/solsona/',
   'Mont-Àgora Cinemes de Santa Margarida de Montbui': 'https://www.cinemesmontagora.com',
   'Cinema Edison de Granollers': 'https://cinemaedison.cat',
   "Ateneu Cinema d'Igualada": 'https://ateneucinema.cat',
