@@ -122,7 +122,12 @@
   scrollbar-width: none;
   padding-bottom: 0.25rem;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+@media (min-width: 641px) {
+  .filter-bar {
+    flex-wrap: wrap;
+  }
 }
 .filter-bar::-webkit-scrollbar {
   display: none;
