@@ -31,247 +31,788 @@ const jsonLd = {
 ---
 
 <Base {title} {description} {canonical}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <Header />
+
   <main id="main-content" class="about-page">
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-
-    <div class="about-wrap">
-      <h1>Sobre FILMCAT</h1>
-
-      <section aria-labelledby="que-es">
-        <h2 id="que-es">Què és</h2>
-        <p>
-          FILMCAT és una aplicació web gratuïta i de codi obert que mostra en temps real totes les
-          projeccions de cinema en llengua catalana —en VOSC (versió original subtitulada en català)
-          i VDC (versió doblada al català)— a tots els cinemes de Catalunya. És l'única eina digital
-          que agrega de manera exhaustiva l'oferta de cinema en català, a partir de les dades
-          obertes de la Generalitat de Catalunya.
-        </p>
-      </section>
-
-      <div class="about-photo-single">
+    <!-- ── HERO ── -->
+    <div class="about-hero">
+      <div class="about-hero-bg" id="heroBg">
         <img
           src="/about/filmcat-parella-amigues-cinema-catala.png"
-          alt="Parella d'amigues veient cinema en català amb FILMCAT"
-          width="220"
-          height="330"
-          loading="lazy"
+          alt=""
+          aria-hidden="true"
+          width="800"
+          height="1200"
+          fetchpriority="high"
           decoding="async"
         />
       </div>
-
-      <section aria-labelledby="dades">
-        <h2 id="dades">Dades del projecte</h2>
-        <dl>
-          <dt>URL</dt>
-          <dd><a href="https://filmcat.app">filmcat.app</a></dd>
-          <dt>Autor</dt>
-          <dd>Adrià Montiel</dd>
-          <dt>Codi obert</dt>
-          <dd>
-            Sí — <a href="https://github.com/adriamontiel/filmcat-astro" rel="noopener noreferrer"
-              >GitHub</a
-            >
-          </dd>
-          <dt>Font de dades</dt>
-          <dd>Generalitat de Catalunya (dades obertes)</dd>
-          <dt>Cobertura</dt>
-          <dd>Tots els cinemes de Catalunya</dd>
-          <dt>Actualització</dt>
-          <dd>Setmanal</dd>
-          <dt>Tecnologia</dt>
-          <dd>JavaScript, Astro, Vite</dd>
-        </dl>
-      </section>
-
-      <div class="about-photo-single">
-        <img
-          src="/about/filmcat-familia-cinema-catala.png"
-          alt="Família veient cinema en català gràcies a FILMCAT"
-          width="220"
-          height="330"
-          loading="lazy"
-          decoding="async"
-        />
+      <div class="about-hero-overlay"></div>
+      <div class="about-hero-content">
+        <div class="about-hero-tag" aria-hidden="true">▲ FILMCAT — Sobre el projecte</div>
+        <h1 class="about-hero-title">
+          <span class="word">Cinema</span>
+          <span class="word">en</span>
+          <span class="word"><em>Català.</em></span>
+        </h1>
+        <p class="about-hero-lead">
+          L'única eina digital que agrega totes les projeccions de cinema en català a tots els
+          cinemes de Catalunya.
+        </p>
       </div>
-
-      <section aria-labelledby="formats">
-        <h2 id="formats">Formats de projecció</h2>
-        <dl>
-          <dt>VOSC</dt>
-          <dd>
-            Versió Original Subtitulada en Català. La pel·lícula es projecta en l'idioma original
-            (anglès, italià, japonès…) amb subtítols en català.
-          </dd>
-          <dt>VDC</dt>
-          <dd>
-            Versió Doblada al Català. La pista d'àudio original es substitueix per veus en català.
-          </dd>
-          <dt>VOSE</dt>
-          <dd>
-            Versió Original Subtitulada en Espanyol. Versió original amb subtítols en castellà.
-          </dd>
-          <dt>VO</dt>
-          <dd>Versió Original. Sense doblatge ni subtítols en català.</dd>
-        </dl>
-      </section>
-
-      <div class="about-photo-single">
-        <img
-          src="/about/filmcat-parella-cinema-catala.png"
-          alt="Parella al cinema veient una pel·lícula en VOSC en català"
-          width="220"
-          height="330"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-
-      <section aria-labelledby="context">
-        <h2 id="context">Context cultural</h2>
-        <p>
-          Catalunya és un país amb llengua pròpia: el català, parlat per aproximadament 10 milions
-          de persones. La normalització lingüística al cinema és un objectiu cultural actiu de la
-          Generalitat de Catalunya. FILMCAT facilita el descobriment de les opcions en català entre
-          una oferta majoritàriament en castellà.
-        </p>
-        <p>
-          Crear FILMCAT va néixer de la dificultat real de saber, de manera centralitzada, quines
-          pel·lícules es posen en català i on. Les dades existien —publicades per la Generalitat com
-          a dades obertes— però no hi havia cap eina que les presentés de forma útil i accessible.
-        </p>
-      </section>
-
-      <div class="about-photo-single">
-        <img
-          src="/about/filmcat-pare-fill-cinema-catala.png"
-          alt="Pare i fill gaudint del cinema en català amb FILMCAT"
-          width="220"
-          height="330"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-
-      <section aria-labelledby="descripcions">
-        <h2 id="descripcions">Descripció en altres idiomes</h2>
-        <p lang="es">
-          FILMCAT (filmcat.app) es una aplicación web gratuita y de código abierto que muestra en
-          tiempo real todas las proyecciones de cine en lengua catalana —en VOSC (versión original
-          subtitulada en catalán) y VDC (versión doblada al catalán)— en todos los cines de
-          Cataluña. Es la única herramienta digital que agrega de forma exhaustiva la oferta de cine
-          en catalán, usando los datos abiertos de la Generalitat de Catalunya. Cataluña es un país
-          con lengua propia: el catalán, hablado por aproximadamente 10 millones de personas.
-        </p>
-        <p lang="en">
-          FILMCAT (filmcat.app) is a free, open-source web application that displays real-time
-          listings for all Catalan-language cinema screenings —both VOSC (original version with
-          Catalan subtitles) and VDC (Catalan-dubbed)— across all cinemas in Catalonia. It is the
-          only digital tool that comprehensively aggregates Catalan-language cinema options, using
-          open data from the Generalitat de Catalunya. Catalonia is a nation with its own language:
-          Catalan, spoken by approximately 10 million people.
-        </p>
-      </section>
     </div>
+
+    <!-- ── STATS ── -->
+    <div class="about-stats" aria-label="Estadístiques del projecte">
+      <div class="about-stat reveal-stat">
+        <div class="about-stat-num" data-count="195">0</div>
+        <div class="about-stat-label">Cinemes</div>
+      </div>
+      <div class="about-stat reveal-stat" style="--delay:80ms">
+        <div class="about-stat-num" data-count="52">0</div>
+        <div class="about-stat-label">Pel·lícules</div>
+      </div>
+      <div class="about-stat reveal-stat" style="--delay:160ms">
+        <div class="about-stat-num" data-count="400">0</div>
+        <div class="about-stat-label">Sessions setmanals</div>
+      </div>
+    </div>
+
+    <!-- ── BODY ── -->
+    <div class="about-body">
+      <!-- 01 · Què és -->
+      <div class="about-chapter reveal-chapter" id="chapter-01">
+        <div class="chapter-num" aria-hidden="true">01</div>
+        <div class="chapter-content">
+          <h2 class="chapter-tag" id="que-es">Què és</h2>
+          <p>
+            FILMCAT és una aplicació web gratuïta i de codi obert que mostra en temps real totes les
+            projeccions de cinema en llengua catalana —en VOSC (versió original subtitulada en
+            català) i VDC (versió doblada al català)— a tots els cinemes de Catalunya. És l'única
+            eina digital que agrega de manera exhaustiva l'oferta de cinema en català, a partir de
+            les dades obertes de la Generalitat de Catalunya.
+          </p>
+          <blockquote class="chapter-pull reveal-pull">
+            L'única eina digital de cinema<br />en català a Catalunya.
+          </blockquote>
+        </div>
+        <div class="chapter-photo reveal-photo">
+          <img
+            src="/about/filmcat-familia-cinema-catala.png"
+            alt="Família veient cinema en català gràcies a FILMCAT"
+            width="220"
+            height="330"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+
+      <!-- 02 · Formats -->
+      <div class="about-chapter reveal-chapter" id="chapter-02">
+        <div class="chapter-num" aria-hidden="true">02</div>
+        <div class="chapter-content chapter-content--full">
+          <h2 class="chapter-tag" id="formats">Formats de projecció</h2>
+          <div class="formats-grid">
+            <div class="format-card reveal-card" style="--delay:0ms">
+              <div class="format-code">VOSC</div>
+              <p>
+                Versió original subtitulada en català. La pel·lícula es projecta en l'idioma
+                original amb subtítols en català.
+              </p>
+            </div>
+            <div class="format-card reveal-card format-card--accent" style="--delay:80ms">
+              <div class="format-code format-code--red">VDC</div>
+              <p>
+                Versió doblada al català. La pista d'àudio original es substitueix per veus en
+                català.
+              </p>
+            </div>
+            <div class="format-card reveal-card" style="--delay:160ms">
+              <div class="format-code">VOSE</div>
+              <p>
+                Versió original subtitulada en espanyol. Versió original amb subtítols en castellà.
+              </p>
+            </div>
+            <div class="format-card reveal-card" style="--delay:240ms">
+              <div class="format-code">VO</div>
+              <p>Versió original. Sense doblatge ni subtítols en català.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 · Context cultural -->
+      <div class="about-chapter reveal-chapter" id="chapter-03">
+        <div class="chapter-num" aria-hidden="true">03</div>
+        <div class="chapter-content">
+          <h2 class="chapter-tag" id="context">Context cultural</h2>
+          <p>
+            Catalunya és un país amb llengua pròpia: el català, parlat per aproximadament 10 milions
+            de persones. La normalització lingüística al cinema és un objectiu cultural actiu de la
+            Generalitat de Catalunya. FILMCAT facilita el descobriment de les opcions en català
+            entre una oferta majoritàriament en castellà.
+          </p>
+          <p>
+            Crear FILMCAT va néixer de la dificultat real de saber, de manera centralitzada, quines
+            pel·lícules es posen en català i on. Les dades existien —publicades per la Generalitat
+            com a dades obertes— però no hi havia cap eina que les presentés de forma útil i
+            accessible.
+          </p>
+          <blockquote class="chapter-pull reveal-pull">
+            10 milions de persones<br />parlen català.
+          </blockquote>
+        </div>
+        <div class="chapter-photo reveal-photo">
+          <img
+            src="/about/filmcat-parella-cinema-catala.png"
+            alt="Parella al cinema veient una pel·lícula en VOSC en català"
+            width="220"
+            height="330"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+
+      <!-- 04 · Dades del projecte -->
+      <div class="about-chapter reveal-chapter" id="chapter-04">
+        <div class="chapter-num" aria-hidden="true">04</div>
+        <div class="chapter-content chapter-content--full">
+          <h2 class="chapter-tag" id="dades">Dades del projecte</h2>
+          <div class="data-grid">
+            <div class="data-card reveal-card" style="--delay:0ms">
+              <div class="data-key">Autor</div>
+              <div class="data-val">Adrià Montiel</div>
+            </div>
+            <div class="data-card reveal-card" style="--delay:60ms">
+              <div class="data-key">Codi obert</div>
+              <div class="data-val">
+                <a href="https://github.com/adriamontiel/filmcat-astro" rel="noopener noreferrer"
+                  >GitHub</a>
+              </div>
+            </div>
+            <div class="data-card reveal-card" style="--delay:120ms">
+              <div class="data-key">Font de dades</div>
+              <div class="data-val">Generalitat de Catalunya</div>
+            </div>
+            <div class="data-card reveal-card" style="--delay:180ms">
+              <div class="data-key">Actualització</div>
+              <div class="data-val">Setmanal</div>
+            </div>
+            <div class="data-card reveal-card" style="--delay:240ms">
+              <div class="data-key">Tecnologia</div>
+              <div class="data-val">Astro · JavaScript · Vite</div>
+            </div>
+            <div class="data-card data-card--highlight reveal-card" style="--delay:300ms">
+              <div class="data-key">URL</div>
+              <div class="data-val"><a href="https://filmcat.app">filmcat.app</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05 · Descripció en altres idiomes -->
+      <div class="about-chapter reveal-chapter" id="chapter-05">
+        <div class="chapter-num" aria-hidden="true">05</div>
+        <div class="chapter-content chapter-content--full">
+          <h2 class="chapter-tag" id="descripcions">Descripció en altres idiomes</h2>
+          <div class="lang-blocks">
+            <p lang="es">
+              FILMCAT (filmcat.app) es una aplicación web gratuita y de código abierto que muestra
+              en tiempo real todas las proyecciones de cine en lengua catalana —en VOSC y VDC— en
+              todos los cines de Cataluña. Es la única herramienta digital que agrega de forma
+              exhaustiva la oferta de cine en catalán, usando los datos abiertos de la Generalitat
+              de Catalunya.
+            </p>
+            <p lang="en">
+              FILMCAT (filmcat.app) is a free, open-source web application that displays real-time
+              listings for all Catalan-language cinema screenings —both VOSC and VDC— across all
+              cinemas in Catalonia. It is the only digital tool that comprehensively aggregates
+              Catalan-language cinema options, using open data from the Generalitat de Catalunya.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /about-body -->
   </main>
+
   <Footer />
+
   <script>
-    document.querySelectorAll<HTMLImageElement>('.about-photo-single img').forEach((img) => {
-      const mark = () => img.classList.add('loaded');
-      if (img.complete && img.naturalWidth > 0) {
-        mark();
-      } else {
-        img.addEventListener('load', mark, { once: true });
-        img.addEventListener('error', mark, { once: true });
-      }
-    });
+    // ── PARALLAX HERO ──────────────────────────────────────────
+    const heroBg = document.getElementById('heroBg') as HTMLElement | null;
+    if (heroBg && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      let ticking = false;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              const y = window.scrollY;
+              heroBg.style.transform = `translateY(${y * 0.35}px)`;
+              ticking = false;
+            });
+            ticking = true;
+          }
+        },
+        { passive: true }
+      );
+    }
+
+    // ── HERO TITLE WORD STAGGER ────────────────────────────────
+    const words = document.querySelectorAll<HTMLElement>('.about-hero-title .word');
+    const heroLead = document.querySelector<HTMLElement>('.about-hero-lead');
+    const heroTag = document.querySelector<HTMLElement>('.about-hero-tag');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduced) {
+      [heroTag, ...Array.from(words), heroLead].forEach((el, i) => {
+        if (!el) return;
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(18px)';
+        el.style.transition = `opacity 0.6s ease, transform 0.6s ease`;
+        el.style.transitionDelay = `${i * 110}ms`;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            el.style.opacity = '';
+            el.style.transform = '';
+          })
+        );
+      });
+    }
+
+    // ── INTERSECTION OBSERVER ──────────────────────────────────
+    if (!reduced) {
+      // Chapters slide-up
+      const chapterObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('visible');
+              chapterObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.08 }
+      );
+
+      document.querySelectorAll('.reveal-chapter').forEach((el) => chapterObs.observe(el));
+
+      // Photos clip-path reveal
+      const photoObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('visible');
+              photoObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.15 }
+      );
+
+      document.querySelectorAll('.reveal-photo').forEach((el) => photoObs.observe(el));
+
+      // Pull-quote reveal
+      const pullObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('visible');
+              pullObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.5 }
+      );
+
+      document.querySelectorAll('.reveal-pull').forEach((el) => pullObs.observe(el));
+
+      // Cards stagger
+      const cardObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('visible');
+              cardObs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      document.querySelectorAll('.reveal-card').forEach((el) => cardObs.observe(el));
+    }
+
+    // ── COUNT-UP STATS ─────────────────────────────────────────
+    function countUp(el: HTMLElement, target: number, duration = 900) {
+      const start = performance.now();
+      const update = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        el.textContent = Math.round(ease * target).toString();
+        if (t < 1) requestAnimationFrame(update);
+      };
+      requestAnimationFrame(update);
+    }
+
+    const statObs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const stat = e.target as HTMLElement;
+            stat.classList.add('visible');
+            const numEl = stat.querySelector<HTMLElement>('.about-stat-num');
+            const target = parseInt(numEl?.dataset.count ?? '0', 10);
+            if (numEl) {
+              setTimeout(
+                () => countUp(numEl, target),
+                parseFloat(getComputedStyle(stat).getPropertyValue('--delay') || '0')
+              );
+            }
+            statObs.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    document.querySelectorAll('.reveal-stat').forEach((el) => statObs.observe(el));
   </script>
 </Base>
 
 <style>
+  /* ── RESET ──────────────────────────────────────── */
   .about-page {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: calc(64px + 2.5rem) var(--px) 4rem;
+    overflow-x: hidden;
   }
-  .about-wrap {
+
+  /* ── HERO ────────────────────────────────────────── */
+  .about-hero {
+    position: relative;
+    height: clamp(460px, 80vh, 680px);
+    overflow: hidden;
+    margin-top: 0;
+  }
+
+  .about-hero-bg {
+    position: absolute;
+    inset: -20% 0 -20%;
+    will-change: transform;
+  }
+
+  .about-hero-bg img {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+    filter: brightness(0.55) saturate(0.8);
   }
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    color: var(--text);
-    margin-bottom: 2rem;
+
+  .about-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(10, 10, 12, 0.2) 0%, rgba(10, 10, 12, 0.92) 100%),
+      linear-gradient(to right, rgba(10, 10, 12, 0.4) 0%, transparent 60%);
   }
-  h2 {
-    font-size: 1.1rem;
-    color: var(--gold);
+
+  .about-hero-content {
+    position: absolute;
+    bottom: clamp(32px, 6vw, 72px);
+    left: var(--px);
+    right: var(--px);
+    max-width: 760px;
+  }
+
+  .about-hero-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 2rem 0 0.75rem;
+    color: var(--red-light);
+    margin-bottom: 14px;
   }
-  p {
-    color: var(--muted);
-    line-height: 1.7;
-    margin-bottom: 1rem;
-  }
-  dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 0.4rem 1.5rem;
-    margin: 0;
-  }
-  dt {
+
+  .about-hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 10vw, 96px);
+    line-height: 0.95;
     color: var(--text);
-    font-weight: 600;
-    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    margin: 0 0 20px;
   }
-  dd {
-    color: var(--muted);
-    font-size: 0.9rem;
+
+  .about-hero-title .word {
+    display: inline-block;
+  }
+
+  .about-hero-title em {
+    font-style: normal;
+    color: var(--red-light);
+  }
+
+  .about-hero-lead {
+    font-size: clamp(14px, 2vw, 16px);
+    color: rgba(240, 240, 240, 0.72);
+    line-height: 1.6;
+    max-width: 480px;
     margin: 0;
   }
-  dd a {
-    color: var(--red);
-    text-underline-offset: 3px;
+
+  /* ── STATS ───────────────────────────────────────── */
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--border);
   }
-  section {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  .about-stat {
+    padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 32px);
+    border-right: 1px solid var(--border);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 0.5s ease var(--delay, 0ms),
+      transform 0.5s ease var(--delay, 0ms);
   }
-  section:last-child {
+
+  .about-stat:last-child {
+    border-right: none;
+  }
+
+  .about-stat.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .about-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    color: var(--text);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+
+  .about-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── BODY ────────────────────────────────────────── */
+  .about-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 var(--px) 6rem;
+  }
+
+  /* ── CHAPTER ─────────────────────────────────────── */
+  .about-chapter {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 24px;
+    padding: clamp(32px, 5vw, 52px) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: start;
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+  }
+
+  .about-chapter.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .about-chapter:last-child {
     border-bottom: none;
   }
 
-  /* Foto individual centrada */
-  .about-photo-single {
-    margin: 0 auto 2.5rem;
-    max-width: 220px;
-    aspect-ratio: 2/3;
-    border-radius: 6px;
+  .chapter-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 72px);
+    color: rgba(255, 255, 255, 0.05);
+    line-height: 1;
+    padding-top: 2px;
+    letter-spacing: 0;
+    user-select: none;
+  }
+
+  .chapter-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 14px;
+  }
+
+  .chapter-content p {
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+    font-size: 15px;
+  }
+
+  .chapter-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* chapter with photo: 3-col */
+  .about-chapter:has(.chapter-photo) {
+    grid-template-columns: 56px 1fr clamp(120px, 18vw, 180px);
+  }
+
+  /* full-width chapter content */
+  .chapter-content--full {
+    grid-column: span 1;
+  }
+
+  /* ── PULL-QUOTE ───────────────────────────────────── */
+  .chapter-pull {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(17px, 2.5vw, 22px);
+    color: var(--red-light);
+    letter-spacing: 0.03em;
+    line-height: 1.25;
+    margin: 20px 0 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--red);
+    border-left-width: 0;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition:
+      opacity 0.5s ease 0.2s,
+      transform 0.5s ease 0.2s,
+      border-left-width 0.4s ease 0.15s;
+  }
+
+  .chapter-pull.visible {
+    opacity: 1;
+    transform: none;
+    border-left-width: 2px;
+  }
+
+  /* ── PHOTO OFFSET ────────────────────────────────── */
+  .chapter-photo {
+    margin-top: 6px;
+    border-radius: 8px;
     overflow: hidden;
-    background: var(--bg3);
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.75s cubic-bezier(0.77, 0, 0.18, 1) 0.1s;
+    position: relative;
+    top: -16px;
   }
-  .about-photo-single:has(img:not(.loaded)) {
-    background: linear-gradient(90deg, var(--bg3) 25%, var(--surface2) 50%, var(--bg3) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.6s infinite;
+
+  .chapter-photo.visible {
+    clip-path: inset(0 0% 0 0);
   }
-  .about-photo-single img {
+
+  .chapter-photo img {
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 6px;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+  }
+
+  /* ── FORMATS GRID ────────────────────────────────── */
+  .formats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .format-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
     opacity: 0;
-    transition: opacity 0.35s ease;
+    transform: translateY(14px) scale(0.97);
+    transition:
+      opacity 0.45s ease var(--delay, 0ms),
+      transform 0.45s ease var(--delay, 0ms);
   }
-  .about-photo-single img.loaded {
+
+  .format-card.visible {
     opacity: 1;
+    transform: none;
   }
+
+  .format-card--accent {
+    border-color: rgba(192, 57, 43, 0.25);
+    background: rgba(192, 57, 43, 0.06);
+  }
+
+  .format-code {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--text);
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .format-code--red {
+    color: var(--red-light);
+  }
+
+  .format-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── DATA GRID ───────────────────────────────────── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .data-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.4s ease var(--delay, 0ms),
+      transform 0.4s ease var(--delay, 0ms);
+  }
+
+  .data-card.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .data-card--highlight {
+    border-color: rgba(192, 57, 43, 0.3);
+    background: rgba(192, 57, 43, 0.07);
+  }
+
+  .data-key {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .data-val {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .data-card a,
+  .data-card--highlight .data-val {
+    color: var(--red-light);
+    text-decoration: none;
+  }
+
+  .data-card a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ── LANG BLOCKS ─────────────────────────────────── */
+  .lang-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .lang-blocks p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────── */
   @media (max-width: 640px) {
-    .about-photo-single {
-      max-width: 65vw;
+    .about-hero {
+      height: clamp(380px, 75vh, 520px);
+    }
+
+    .about-stats {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .about-stat {
+      padding: 16px 10px;
+    }
+    .about-stat-label {
+      font-size: 9px;
+    }
+
+    .about-chapter {
+      grid-template-columns: 40px 1fr !important;
+    }
+
+    .chapter-photo {
+      display: none;
+    }
+
+    .formats-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .format-card {
+      padding: 14px;
+    }
+    .format-code {
+      font-size: 22px;
+    }
+
+    .data-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .chapter-num {
+      font-size: 44px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .formats-grid {
+      grid-template-columns: 1fr;
+    }
+    .data-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ── REDUCED MOTION ─────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .about-chapter,
+    .about-stat,
+    .chapter-pull,
+    .chapter-photo,
+    .format-card,
+    .data-card {
+      opacity: 1 !important;
+      transform: none !important;
+      clip-path: none !important;
+      transition: none !important;
     }
   }
 </style>
