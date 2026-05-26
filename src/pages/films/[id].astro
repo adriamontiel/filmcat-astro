@@ -19,72 +19,17 @@ const { films, comingSoon } = await fetchFilms();
 const allFilms = [...films, ...comingSoon];
 const film = allFilms.find((f) => slugify(f.title) === id);
 
-// 404 if not found
-if (!film) {
-  return Astro.redirect('/', 302);
-}
-
-// Fetch TMDB data for this specific film
-const tmdb = await fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal);
-if (tmdb) {
-  film.posterPath = tmdb.posterPath;
-  film.backdropPath = tmdb.backdropPath;
-  film._tmdbId = tmdb.tmdbId;
-
-  // Fetch runtime + genres (single extra call; cached with 8h TTL)
-  const details = await fetchTMDBDetails(tmdb.tmdbId);
-  if (details) {
-    if (details.runtime) film.runtime = details.runtime;
-    if (details.genres.length) film.genres = details.genres;
-  }
-}
-
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://filmcat.cat';
-const filmSlug = slugify(film.title);
-const canonicalUrl = `${siteUrl}/films/${filmSlug}`;
-const posterUrl = film.posterPath ? `https://image.tmdb.org/t/p/w500${film.posterPath}` : null;
-const backdropUrl = film.backdropPath
-  ? `https://image.tmdb.org/t/p/w780${film.backdropPath}`
-  : null;
 
-const description = film.synopsis
-  ? film.synopsis.slice(0, 160).replace(/\s+\S*$/, '') + '…'
-  : `${film.title} — Cinema en Català. Horaris i sessions a Catalunya.`;
+// ── Global stats (depend on `films`, not on the specific `film`) ──
+const totalFilmCount = films.length;
+const totalCinemaCount = new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema))).size;
+const totalSessionCount = films.reduce(
+  (a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0),
+  0
+);
 
-const isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
-const ri = ratingInfo(film.rating);
-
-// Clean first language: "català (60 %); castellà" → "Català"
-const cleanLanguage = film.language
-  ? (() => {
-      const s = film.language
-        .split(';')[0]
-        .replace(/\s*\(\d+\s*%\)/, '')
-        .trim();
-      return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-    })()
-  : '';
-
-// Format session date to Catalan: "17/03/2026" → "Dimarts, 17 de març"
-function formatSessionDate(raw: string): string {
-  const parts = raw.split('/');
-  if (parts.length !== 3) return raw;
-  const [d, m, y] = parts.map(Number);
-  if (!d || !m || !y) return raw;
-  try {
-    const formatted = new Intl.DateTimeFormat('ca', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    }).format(new Date(y, m - 1, d));
-    // Capitalize first letter (Intl returns "dimarts, 17 de març" in lowercase)
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-  } catch {
-    return raw;
-  }
-}
-
-// Format premiere date to Catalan: "06/03/2026" → "6 de març de 2026"
+// ── Helpers (no dependency on film) ──
 function formatPremiere(raw: string | undefined): string | null {
   if (!raw || raw === '--') return null;
   const parts = raw.split('/');
@@ -101,7 +46,10 @@ function formatPremiere(raw: string | undefined): string | null {
     return raw;
   }
 }
-const premiereDisplay = formatPremiere(film.premiere);
+
+function mapsWebUrl(cinema: string, city: string) {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${cinema}, ${city}`)}`;
+}
 
 const versionLabel: Record<string, string> = {
   VDC: 'Versió Doblada al Català',
@@ -111,336 +59,341 @@ const versionLabel: Record<string, string> = {
   VOSE: 'Versió Original Subtitulada en Espanyol',
 };
 
-// Global stats for the footer (same as home page)
-const totalFilmCount = films.length;
-const totalCinemaCount = new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema))).size;
-const totalSessionCount = films.reduce(
-  (a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0),
-  0
-);
+// ── Film-specific variables — declared as `let` so they're accessible in both
+//    template branches. Only assigned when `film` is found. ──
+let description = '';
+let canonicalUrl = `${siteUrl}/films/${id ?? ''}`;
+let posterUrl: string | null = null;
+let backdropUrl: string | null = null;
+let isVO = false;
+let ri: ReturnType<typeof ratingInfo> | null = null;
+let cleanLanguage = '';
+let premiereDisplay: string | null = null;
+let c1 = '#111';
+let c2 = '#222';
+let abbr = '';
+let jsonLdStr = '';
+let breadcrumbLdStr = '';
 
-// JSON-LD Movie schema
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Movie',
-  name: film.title,
-  ...(film.titleOriginal && film.titleOriginal !== film.title
-    ? { alternateName: film.titleOriginal }
-    : {}),
-  description: film.synopsis || '',
-  datePublished: String(film.year),
-  ...(film.director ? { director: { '@type': 'Person', name: film.director } } : {}),
-  ...(posterUrl ? { image: posterUrl } : {}),
-  ...(film.runtime ? { duration: `PT${film.runtime}M` } : {}),
-  ...(film.genres?.length ? { genre: film.genres } : {}),
-  ...(film.rating && film.rating !== '--' ? { contentRating: film.rating } : {}),
-  url: canonicalUrl,
-  inLanguage: 'ca',
-  offers:
-    film.sessions.length > 0
+if (!film) {
+  // Don't redirect to '/' — that causes a View Transitions back-navigation which,
+  // combined with the scroll-restore logic in filmcat.js, looks like an "anchor
+  // scroll" on the homepage. Show a proper 404 instead.
+  Astro.response.status = 404;
+} else {
+  // Fetch TMDB data for this specific film
+  const tmdb = await fetchTMDBPoster(film.searchTitle, film.year, film.titleOriginal);
+  if (tmdb) {
+    film.posterPath = tmdb.posterPath;
+    film.backdropPath = tmdb.backdropPath;
+    film._tmdbId = tmdb.tmdbId;
+
+    // Fetch runtime + genres (single extra call; cached with 8h TTL)
+    const details = await fetchTMDBDetails(tmdb.tmdbId);
+    if (details) {
+      if (details.runtime) film.runtime = details.runtime;
+      if (details.genres.length) film.genres = details.genres;
+    }
+  }
+
+  const filmSlug = slugify(film.title);
+  canonicalUrl = `${siteUrl}/films/${filmSlug}`;
+  posterUrl = film.posterPath ? `https://image.tmdb.org/t/p/w500${film.posterPath}` : null;
+  backdropUrl = film.backdropPath ? `https://image.tmdb.org/t/p/w780${film.backdropPath}` : null;
+
+  description = film.synopsis
+    ? film.synopsis.slice(0, 160).replace(/\s+\S*$/, '') + '…'
+    : `${film.title} — Cinema en Català. Horaris i sessions a Catalunya.`;
+
+  isVO = ['VO', 'VOSC', 'VOSE'].includes(film.version);
+  ri = ratingInfo(film.rating);
+
+  // Clean first language: "català (60 %); castellà" → "Català"
+  cleanLanguage = film.language
+    ? (() => {
+        const s = film.language
+          .split(';')[0]
+          .replace(/\s*\(\d+\s*%\)/, '')
+          .trim();
+        return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+      })()
+    : '';
+
+  premiereDisplay = formatPremiere(film.premiere);
+
+  // Color fallback for placeholder
+  const colorRe = /^#[0-9a-fA-F]{3,6}$/;
+  c1 = colorRe.test(film.color1) ? film.color1 : '#111';
+  c2 = colorRe.test(film.color2) ? film.color2 : '#222';
+
+  // Abbreviation for poster placeholder
+  abbr = film.title
+    .split(' ')
+    .filter((w) => w.length > 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3);
+
+  // JSON-LD Movie schema
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Movie',
+    name: film.title,
+    ...(film.titleOriginal && film.titleOriginal !== film.title
+      ? { alternateName: film.titleOriginal }
+      : {}),
+    description: film.synopsis || '',
+    datePublished: String(film.year),
+    ...(film.director ? { director: { '@type': 'Person', name: film.director } } : {}),
+    ...(posterUrl ? { image: posterUrl } : {}),
+    ...(film.runtime ? { duration: `PT${film.runtime}M` } : {}),
+    ...(film.genres?.length ? { genre: film.genres } : {}),
+    ...(film.rating && film.rating !== '--' ? { contentRating: film.rating } : {}),
+    url: canonicalUrl,
+    inLanguage: 'ca',
+    offers:
+      film.sessions.length > 0
+        ? {
+            '@type': 'Offer',
+            availability: 'https://schema.org/InStock',
+            priceCurrency: 'EUR',
+          }
+        : undefined,
+    ...(film._trailerKey
       ? {
-          '@type': 'Offer',
-          availability: 'https://schema.org/InStock',
-          priceCurrency: 'EUR',
+          trailer: {
+            '@type': 'VideoObject',
+            name: `Tràiler de ${film.title}`,
+            embedUrl: `https://www.youtube.com/embed/${film._trailerKey}`,
+          },
         }
-      : undefined,
-  ...(film._trailerKey
-    ? {
-        trailer: {
-          '@type': 'VideoObject',
-          name: `Tràiler de ${film.title}`,
-          embedUrl: `https://www.youtube.com/embed/${film._trailerKey}`,
-        },
-      }
-    : {}),
-};
-const jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
+      : {}),
+  };
+  jsonLdStr = JSON.stringify(jsonLd).replace(/<\/script>/gi, '<\\/script>');
 
-// JSON-LD BreadcrumbList schema
-const breadcrumbLd = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Inici',
-      item: siteUrl + '/',
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: film.title,
-      item: canonicalUrl,
-    },
-  ],
-};
-const breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\\/script>');
+  // JSON-LD BreadcrumbList schema
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Inici',
+        item: siteUrl + '/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: film.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
+  breadcrumbLdStr = JSON.stringify(breadcrumbLd).replace(/<\/script>/gi, '<\\/script>');
 
-// Color fallback for placeholder
-const colorRe = /^#[0-9a-fA-F]{3,6}$/;
-const c1 = colorRe.test(film.color1) ? film.color1 : '#111';
-const c2 = colorRe.test(film.color2) ? film.color2 : '#222';
-
-// Abbreviation for poster placeholder
-const abbr = film.title
-  .split(' ')
-  .filter((w) => w.length > 2)
-  .map((w) => w[0])
-  .join('')
-  .toUpperCase()
-  .slice(0, 3);
-
-// Maps web fallback URL (desktop + crawlers)
-function mapsWebUrl(cinema: string, city: string) {
-  return `https://maps.google.com/maps?q=${encodeURIComponent(`${cinema}, ${city}`)}`;
+  // Cache (only for successful film pages; 404s should not be cached)
+  Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
 }
-
-// Cache
-Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
 ---
 
-<Base
-  title={`${film.title} — FILMCAT`}
-  description={description}
-  ogImage={posterUrl}
-  canonical={canonicalUrl}
-  twitterCreator="@filmcatapp"
->
-  <Header />
+{
+  film ? (
+    <Base
+      title={`${film.title} — FILMCAT`}
+      description={description}
+      ogImage={posterUrl}
+      canonical={canonicalUrl}
+      twitterCreator="@filmcatapp"
+    >
+      <Header />
 
-  <main id="main-content">
-    <div class="film-page">
-      <!-- ── HERO ── -->
-      <div class="film-hero">
-        {
-          backdropUrl ? (
-            <img
-              class="film-backdrop-img"
-              src={backdropUrl}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
-            />
-          ) : (
-            <div
-              class="film-backdrop-img"
-              style={`background:linear-gradient(135deg,${c1},${c2})`}
-              aria-hidden="true"
-            />
-          )
-        }
-        <div class="film-backdrop-gradient" aria-hidden="true"></div>
-        <div class="film-hero-content">
-          <a href="/" class="film-back-link" id="backLink" aria-label="Tornar a la cartellera">
-            ← CARTELLERA
-          </a>
-          <div class="film-hero-main">
-            <div class="film-poster">
-              {
-                posterUrl ? (
-                  <img
-                    src={posterUrl}
-                    alt={`Pòster oficial de ${film.title}`}
-                    width="120"
-                    height="180"
-                    decoding="async"
-                    loading="eager"
-                  />
-                ) : (
-                  <div
-                    class="poster-placeholder"
-                    style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
-                    aria-hidden="true"
-                  >
-                    <svg viewBox="0 0 100 88" width="32" style="opacity:.25">
-                      <polygon points="50,0 100,88 0,88" fill="white" />
-                    </svg>
-                    <div class="abbr" style="font-size:1rem">
-                      {abbr}
+      <main id="main-content">
+        <div class="film-page">
+          <div class="film-hero">
+            {backdropUrl ? (
+              <img
+                class="film-backdrop-img"
+                src={backdropUrl}
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
+            ) : (
+              <div
+                class="film-backdrop-img"
+                style={`background:linear-gradient(135deg,${c1},${c2})`}
+                aria-hidden="true"
+              />
+            )}
+            <div class="film-backdrop-gradient" aria-hidden="true" />
+            <div class="film-hero-content">
+              <a href="/" class="film-back-link" id="backLink" aria-label="Tornar a la cartellera">
+                ← CARTELLERA
+              </a>
+              <div class="film-hero-main">
+                <div class="film-poster">
+                  {posterUrl ? (
+                    <img
+                      src={posterUrl}
+                      alt={`Pòster oficial de ${film.title}`}
+                      width="120"
+                      height="180"
+                      decoding="async"
+                      loading="eager"
+                    />
+                  ) : (
+                    <div
+                      class="poster-placeholder"
+                      style={`background:linear-gradient(160deg,${c1} 0%,${c2} 100%)`}
+                      aria-hidden="true"
+                    >
+                      <svg viewBox="0 0 100 88" width="32" style="opacity:.25">
+                        <polygon points="50,0 100,88 0,88" fill="white" />
+                      </svg>
+                      <div class="abbr" style="font-size:1rem">
+                        {abbr}
+                      </div>
                     </div>
+                  )}
+                </div>
+                <div class="film-hero-info">
+                  <h1 class="film-title">{film.title}</h1>
+                  {film.titleOriginal && film.titleOriginal !== film.title && (
+                    <p class="film-original-title">{film.titleOriginal}</p>
+                  )}
+                  <div class="film-tags">
+                    <span class={`badge${isVO ? ' vo' : ''}`}>
+                      <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
+                    </span>
+                    {ri && (
+                      <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
+                        <abbr title={ri.full}>{ri.short}</abbr>
+                      </span>
+                    )}
+                    {cleanLanguage && <span class="tag">{cleanLanguage}</span>}
+                    {film.genres?.[0] && <span class="tag">{film.genres[0]}</span>}
+                    {film.runtime && (
+                      <span class="tag" aria-label={`Durada: ${film.runtime} minuts`}>
+                        {film.runtime} min
+                      </span>
+                    )}
+                    {film.year && <span class="tag">{film.year}</span>}
+                    {film.director && <span class="tag">{film.director}</span>}
                   </div>
-                )
-              }
-            </div>
-            <div class="film-hero-info">
-              <h1 class="film-title">{film.title}</h1>
-              {
-                film.titleOriginal && film.titleOriginal !== film.title && (
-                  <p class="film-original-title">{film.titleOriginal}</p>
-                )
-              }
-              <div class="film-tags">
-                <span class={`badge${isVO ? ' vo' : ''}`}>
-                  <abbr title={versionLabel[film.version] ?? film.version}>{film.version}</abbr>
-                </span>
-                {
-                  ri && (
-                    <span class={`badge rating${ri.level !== 'low' ? ` ${ri.level}` : ''}`}>
-                      <abbr title={ri.full}>{ri.short}</abbr>
-                    </span>
-                  )
-                }
-                {cleanLanguage && <span class="tag">{cleanLanguage}</span>}
-                {film.genres?.[0] && <span class="tag">{film.genres[0]}</span>}
-                {
-                  film.runtime && (
-                    <span class="tag" aria-label={`Durada: ${film.runtime} minuts`}>
-                      {film.runtime} min
-                    </span>
-                  )
-                }
-                {film.year && <span class="tag">{film.year}</span>}
-                {film.director && <span class="tag">{film.director}</span>}
+                  {premiereDisplay && (
+                    <p class="film-premiere" aria-label={`Data d'estrena: ${premiereDisplay}`}>
+                      <span aria-hidden="true">📅</span> Estrena: {premiereDisplay}
+                    </p>
+                  )}
+                </div>
               </div>
-              {
-                premiereDisplay && (
-                  <p class="film-premiere" aria-label={`Data d'estrena: ${premiereDisplay}`}>
-                    <span aria-hidden="true">📅</span> Estrena: {premiereDisplay}
-                  </p>
-                )
-              }
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ── BODY ── -->
-      <div class="film-body">
-        <!-- Trailer -->
-        {
-          film._trailerKey && (
-            <div>
-              <a
-                href={`https://www.youtube.com/watch?v=${film._trailerKey}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="trailer-btn"
-                aria-label={`Veure el tràiler de ${film.title} a YouTube`}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
+          <div class="film-body">
+            {film._trailerKey && (
+              <div>
+                <a
+                  href={`https://www.youtube.com/watch?v=${film._trailerKey}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="trailer-btn"
+                  aria-label={`Veure el tràiler de ${film.title} a YouTube`}
                 >
-                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z" />
-                </svg>
-                Veure tràiler
-              </a>
-            </div>
-          )
-        }
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z" />
+                  </svg>
+                  Veure tràiler
+                </a>
+              </div>
+            )}
 
-        <!-- Synopsis -->
-        {
-          film.synopsis && (
+            {film.synopsis && (
+              <div>
+                <h2 class="film-section-title">Sinopsi</h2>
+                <p class="film-synopsis">{film.synopsis}</p>
+              </div>
+            )}
+
+            {versionLabel[film.version] && (
+              <div>
+                <h2 class="film-section-title">Versió</h2>
+                <p class="film-synopsis">{versionLabel[film.version]}</p>
+              </div>
+            )}
+
             <div>
-              <h2 class="film-section-title">Sinopsi</h2>
-              <p class="film-synopsis">{film.synopsis}</p>
-            </div>
-          )
-        }
+              <h2 class="film-section-title">
+                {film.sessions.length > 0 ? 'Sessions disponibles' : 'Sessions'}
+              </h2>
 
-        <!-- Version info -->
-        {
-          versionLabel[film.version] && (
-            <div>
-              <h2 class="film-section-title">Versió</h2>
-              <p class="film-synopsis">{versionLabel[film.version]}</p>
-            </div>
-          )
-        }
-
-        <!-- Sessions -->
-        <div>
-          <h2 class="film-section-title">
-            {film.sessions.length > 0 ? 'Sessions disponibles' : 'Sessions'}
-          </h2>
-
-          {
-            film.sessions.length === 0 ? (
-              <p class="status-msg">Properament — Sessions pendent de confirmar</p>
-            ) : (
-              <div class="sessions-grid" role="list" aria-label="Sessions disponibles">
-                {film.sessions.map((session) => {
-                  return (
-                    <div
-                      class="session-cinema"
-                      role="listitem"
-                      data-province={cityToProvince(session.city)}
-                      data-cinema={session.cinema}
-                      data-dates={JSON.stringify(
-                        session.times.map((t) => {
-                          const [d, m, y] = t.split('/');
-                          return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-                        })
-                      )}
-                    >
-                      <div class="session-cinema-header">
-                        <div>
-                          <div class="session-cinema-name-row">
-                            <a
-                              href={`/cinemes/${cinemaSlug(session.cinema)}`}
-                              class="session-cinema-name session-cinema-name-link"
-                              aria-label={`Veure el cinema ${session.cinema}`}
-                            >
-                              {session.cinema}
-                            </a>
-                          </div>
-                          <div class="session-cinema-city">
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              aria-hidden="true"
-                            >
-                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                              <circle cx="12" cy="10" r="3" />
-                            </svg>
-                            {session.city}
+              {film.sessions.length === 0 ? (
+                <p class="status-msg">Properament — Sessions pendent de confirmar</p>
+              ) : (
+                <div class="sessions-grid" role="list" aria-label="Sessions disponibles">
+                  {film.sessions.map((session) => {
+                    return (
+                      <div
+                        class="session-cinema"
+                        role="listitem"
+                        data-province={cityToProvince(session.city)}
+                        data-cinema={session.cinema}
+                        data-dates={JSON.stringify(
+                          session.times.map((t) => {
+                            const [d, m, y] = t.split('/');
+                            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                          })
+                        )}
+                      >
+                        <div class="session-cinema-header">
+                          <div>
+                            <div class="session-cinema-name-row">
+                              <a
+                                href={`/cinemes/${cinemaSlug(session.cinema)}`}
+                                class="session-cinema-name session-cinema-name-link"
+                                aria-label={`Veure el cinema ${session.cinema}`}
+                              >
+                                {session.cinema}
+                              </a>
+                            </div>
+                            <div class="session-cinema-city">
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                aria-hidden="true"
+                              >
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                              </svg>
+                              {session.city}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div
-                        class="session-horaris-by-day"
-                        aria-live="polite"
-                        aria-label={`Horaris per dia a ${session.cinema}`}
-                      />
-                      <div class="session-actions">
-                        <a
-                          href={mapsWebUrl(session.cinema, session.city)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="trailer-btn session-action-btn maps-link"
-                          data-maps-query={`${session.cinema}, ${session.city}`}
-                          aria-label={`Com arribar a ${session.cinema}`}
-                        >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            aria-hidden="true"
-                          >
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                            <circle cx="12" cy="10" r="3" />
-                          </svg>
-                          Com arribar
-                        </a>
-                        {_CINEMA_URLS[session.cinema] && (
+                        <div
+                          class="session-horaris-by-day"
+                          aria-live="polite"
+                          aria-label={`Horaris per dia a ${session.cinema}`}
+                        />
+                        <div class="session-actions">
                           <a
-                            href={_CINEMA_URLS[session.cinema]}
+                            href={mapsWebUrl(session.cinema, session.city)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="trailer-btn session-action-btn"
-                            aria-label={`Web oficial de ${session.cinema}`}
+                            class="trailer-btn session-action-btn maps-link"
+                            data-maps-query={`${session.cinema}, ${session.city}`}
+                            aria-label={`Com arribar a ${session.cinema}`}
                           >
                             <svg
                               width="13"
@@ -451,210 +404,300 @@ Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revali
                               stroke-width="2"
                               aria-hidden="true"
                             >
-                              <circle cx="12" cy="12" r="10" />
-                              <line x1="2" y1="12" x2="22" y2="12" />
-                              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                              <circle cx="12" cy="10" r="3" />
                             </svg>
-                            Web oficial
+                            Com arribar
                           </a>
-                        )}
+                          {_CINEMA_URLS[session.cinema] && (
+                            <a
+                              href={_CINEMA_URLS[session.cinema]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="trailer-btn session-action-btn"
+                              aria-label={`Web oficial de ${session.cinema}`}
+                            >
+                              <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                aria-hidden="true"
+                              >
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="2" y1="12" x2="22" y2="12" />
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                              </svg>
+                              Web oficial
+                            </a>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          }
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </main>
+      </main>
 
-  <Footer
-    filmCount={totalFilmCount}
-    cinemaCount={totalCinemaCount}
-    sessionCount={totalSessionCount}
-  />
+      <Footer
+        filmCount={totalFilmCount}
+        cinemaCount={totalCinemaCount}
+        sessionCount={totalSessionCount}
+      />
+    </Base>
+  ) : (
+    /* ── 404 — pel·lícula no trobada o eliminada de la cartellera ── */
+    <Base
+      title="Pel·lícula no disponible — FILMCAT"
+      description="Aquesta pel·lícula ja no és a la cartellera."
+      canonical={canonicalUrl}
+    >
+      <Header />
+      <main id="main-content" class="film-not-found">
+        <a href="/" class="film-back-link" aria-label="Tornar a la cartellera">
+          ← CARTELLERA
+        </a>
+        <div class="film-not-found-content">
+          <span class="film-not-found-num" aria-hidden="true">
+            404
+          </span>
+          <h1 class="film-not-found-title">Pel·lícula no disponible</h1>
+          <p class="film-not-found-desc">
+            Aquesta pel·lícula ja no és a la cartellera o ha canviat d'adreça.
+          </p>
+          <a href="/" class="trailer-btn">
+            ← Torna a la cartellera
+          </a>
+        </div>
+      </main>
+      <Footer
+        filmCount={totalFilmCount}
+        cinemaCount={totalCinemaCount}
+        sessionCount={totalSessionCount}
+      />
+    </Base>
+  )
+}
 
-  <!-- JSON-LD structured data -->
-  <script type="application/ld+json" set:html={jsonLdStr} />
-  <script type="application/ld+json" set:html={breadcrumbLdStr} />
+<script type="application/ld+json" set:html={jsonLdStr} />
+<script type="application/ld+json" set:html={breadcrumbLdStr} />
 
-  <!-- Horaris en temps real: fetch /api/horaris per cada dia de cada cinema -->
-  <script define:vars={{ filmTitle: film.title }}>
-    document.addEventListener('astro:page-load', async () => {
-      const cards = [...document.querySelectorAll('.session-cinema[data-cinema]')];
-      if (cards.length === 0) return;
+<script define:vars={{ filmTitle: film?.title ?? '' }}>
+  document.addEventListener('astro:page-load', async () => {
+    const cards = [...document.querySelectorAll('.session-cinema[data-cinema]')];
+    if (cards.length === 0) return;
 
-      // Skeleton per cada dia de cada card
-      cards.forEach((card) => {
-        const dates = JSON.parse(card.dataset.dates || '[]');
+    // Skeleton per cada dia de cada card
+    cards.forEach((card) => {
+      const dates = JSON.parse(card.dataset.dates || '[]');
+      const container = card.querySelector('.session-horaris-by-day');
+      if (!container) return;
+      container.innerHTML = dates
+        .map(
+          () =>
+            '<div class="horaris-day-skeleton"><span class="horaris-loading" aria-hidden="true"></span></div>'
+        )
+        .join('');
+    });
+
+    // Totes les dates úniques de la pàgina, en ordre
+    const allDates = [
+      ...new Set(cards.flatMap((card) => JSON.parse(card.dataset.dates || '[]'))),
+    ].sort();
+    const cinemaNames = [...new Set(cards.map((el) => el.dataset.cinema))];
+    const today = new Date().toISOString().split('T')[0];
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      // Una request per dia, totes en paral·lel
+      const byDate = new Map(
+        await Promise.all(
+          allDates.map(async (date) => {
+            const params = new URLSearchParams({ film: filmTitle, data: date });
+            cinemaNames.forEach((name) => params.append('c', name));
+            const res = await fetch(`https://filmcat-api.vercel.app/api/horaris?${params}`, {
+              signal: controller.signal,
+            });
+            if (!res.ok) throw new Error('API error');
+            const { cinemes } = await res.json();
+            return [date, cinemes];
+          })
+        )
+      );
+      clearTimeout(timer);
+
+      // Renderitza cada card amb tots els dies i horaris
+      for (const card of cards) {
+        const cinemaDates = JSON.parse(card.dataset.dates || '[]');
+        const cinemaName = card.dataset.cinema;
         const container = card.querySelector('.session-horaris-by-day');
-        if (!container) return;
-        container.innerHTML = dates
-          .map(
-            () =>
-              '<div class="horaris-day-skeleton"><span class="horaris-loading" aria-hidden="true"></span></div>'
-          )
-          .join('');
-      });
+        if (!container) continue;
 
-      // Totes les dates úniques de la pàgina, en ordre
-      const allDates = [
-        ...new Set(cards.flatMap((card) => JSON.parse(card.dataset.dates || '[]'))),
-      ].sort();
-      const cinemaNames = [...new Set(cards.map((el) => el.dataset.cinema))];
-      const today = new Date().toISOString().split('T')[0];
+        let html = '';
+        for (const date of cinemaDates) {
+          const cinemes = byDate.get(date) || [];
+          const result = cinemes.find((c) => c.cinema === cinemaName);
+          const isToday = date === today;
 
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
+          const [y, m, d] = date.split('-').map(Number);
+          const label = new Intl.DateTimeFormat('ca', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          }).format(new Date(y, m - 1, d));
+          const labelCap = label.charAt(0).toUpperCase() + label.slice(1);
 
-      try {
-        // Una request per dia, totes en paral·lel
-        const byDate = new Map(
-          await Promise.all(
-            allDates.map(async (date) => {
-              const params = new URLSearchParams({ film: filmTitle, data: date });
-              cinemaNames.forEach((name) => params.append('c', name));
-              const res = await fetch(`https://filmcat-api.vercel.app/api/horaris?${params}`, {
-                signal: controller.signal,
-              });
-              if (!res.ok) throw new Error('API error');
-              const { cinemes } = await res.json();
-              return [date, cinemes];
-            })
-          )
-        );
-        clearTimeout(timer);
+          html += `<div class="horaris-day${isToday ? ' horaris-day--today' : ''}">`;
+          html += `<div class="horaris-day-label">${isToday ? 'Avui, ' : ''}${labelCap}</div>`;
 
-        // Renderitza cada card amb tots els dies i horaris
-        for (const card of cards) {
-          const cinemaDates = JSON.parse(card.dataset.dates || '[]');
-          const cinemaName = card.dataset.cinema;
-          const container = card.querySelector('.session-horaris-by-day');
-          if (!container) continue;
-
-          let html = '';
-          for (const date of cinemaDates) {
-            const cinemes = byDate.get(date) || [];
-            const result = cinemes.find((c) => c.cinema === cinemaName);
-            const isToday = date === today;
-
-            const [y, m, d] = date.split('-').map(Number);
-            const label = new Intl.DateTimeFormat('ca', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            }).format(new Date(y, m - 1, d));
-            const labelCap = label.charAt(0).toUpperCase() + label.slice(1);
-
-            html += `<div class="horaris-day${isToday ? ' horaris-day--today' : ''}">`;
-            html += `<div class="horaris-day-label">${isToday ? 'Avui, ' : ''}${labelCap}</div>`;
-
-            if (result?.status === 'ok' && result.sessions.length > 0) {
-              const times = [...new Set(result.sessions.map((s) => s.time))].sort();
-              html += `<div class="horaris-row">${times.map((t) => `<span class="horari-time">${t}</span>`).join('')}</div>`;
-            }
-
-            html += '</div>';
+          if (result?.status === 'ok' && result.sessions.length > 0) {
+            const times = [...new Set(result.sessions.map((s) => s.time))].sort();
+            html += `<div class="horaris-row">${times.map((t) => `<span class="horari-time">${t}</span>`).join('')}</div>`;
           }
-          container.innerHTML = html;
+
+          html += '</div>';
         }
-      } catch {
-        clearTimeout(timer);
-        // Fallback silenciós: elimina els skeletons
-        cards.forEach((card) => {
-          const container = card.querySelector('.session-horaris-by-day');
-          if (container) container.innerHTML = '';
-        });
+        container.innerHTML = html;
       }
-    });
-  </script>
+    } catch {
+      clearTimeout(timer);
+      // Fallback silenciós: elimina els skeletons
+      cards.forEach((card) => {
+        const container = card.querySelector('.session-horaris-by-day');
+        if (container) container.innerHTML = '';
+      });
+    }
+  });
+</script>
 
-  <!-- Province-aware session grouping: reorders sessions when a province filter is active -->
-  <script>
-    document.addEventListener('astro:page-load', () => {
-      const savedProvince = localStorage.getItem('filmcat_province');
-      if (!savedProvince || savedProvince === 'all') return;
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const savedProvince = localStorage.getItem('filmcat_province');
+    if (!savedProvince || savedProvince === 'all') return;
 
-      const grid = document.querySelector('.sessions-grid');
-      if (!grid) return;
+    const grid = document.querySelector('.sessions-grid');
+    if (!grid) return;
 
-      const items = [...grid.querySelectorAll(':scope > .session-cinema')];
-      const inProvince = items.filter((el) => el.dataset.province === savedProvince);
-      const others = items.filter((el) => el.dataset.province !== savedProvince);
+    const items = [...grid.querySelectorAll(':scope > .session-cinema')];
+    const inProvince = items.filter((el) => el.dataset.province === savedProvince);
+    const others = items.filter((el) => el.dataset.province !== savedProvince);
 
-      if (inProvince.length === 0) return;
+    if (inProvince.length === 0) return;
 
-      // Rebuild with labelled groups
-      grid.innerHTML = '';
-      grid.removeAttribute('role');
-      grid.removeAttribute('aria-label');
+    // Rebuild with labelled groups
+    grid.innerHTML = '';
+    grid.removeAttribute('role');
+    grid.removeAttribute('aria-label');
 
-      const makeLabel = (text, mod) => {
-        const el = document.createElement('div');
-        el.className = 'session-group-label' + (mod ? ' session-group-label--' + mod : '');
-        el.textContent = text;
-        return el;
-      };
-      const makeList = (label) => {
-        const el = document.createElement('div');
-        el.className = 'sessions-group';
-        el.setAttribute('role', 'list');
-        el.setAttribute('aria-label', label);
-        return el;
-      };
+    const makeLabel = (text, mod) => {
+      const el = document.createElement('div');
+      el.className = 'session-group-label' + (mod ? ' session-group-label--' + mod : '');
+      el.textContent = text;
+      return el;
+    };
+    const makeList = (label) => {
+      const el = document.createElement('div');
+      el.className = 'sessions-group';
+      el.setAttribute('role', 'list');
+      el.setAttribute('aria-label', label);
+      return el;
+    };
 
-      const provList = makeList(`Sessions a ${savedProvince}`);
-      inProvince.forEach((el) => provList.appendChild(el));
-      grid.appendChild(makeLabel(savedProvince));
-      grid.appendChild(provList);
+    const provList = makeList(`Sessions a ${savedProvince}`);
+    inProvince.forEach((el) => provList.appendChild(el));
+    grid.appendChild(makeLabel(savedProvince));
+    grid.appendChild(provList);
 
-      if (others.length > 0) {
-        const othList = makeList('Altres sessions');
-        others.forEach((el) => othList.appendChild(el));
-        grid.appendChild(makeLabel('Altres sessions', 'others'));
-        grid.appendChild(othList);
-      }
-    });
-  </script>
+    if (others.length > 0) {
+      const othList = makeList('Altres sessions');
+      others.forEach((el) => othList.appendChild(el));
+      grid.appendChild(makeLabel('Altres sessions', 'others'));
+      grid.appendChild(othList);
+    }
+  });
+</script>
 
-  <!-- Maps deep link: geo: on Android, comgooglemaps:// on iOS, web fallback on desktop -->
-  <script>
-    document.addEventListener('astro:page-load', () => {
-      document.querySelectorAll('.maps-link').forEach((el) => {
-        el.addEventListener('click', (e) => {
-          const ua = navigator.userAgent;
-          const isIOS = /iPhone|iPad|iPod/i.test(ua);
-          const isAndroid = /Android/i.test(ua);
-          if (!isIOS && !isAndroid) return; // desktop: obre href en nova pestanya
-          e.preventDefault();
-          const query = encodeURIComponent((el as HTMLAnchorElement).dataset.mapsQuery ?? '');
-          window.location.href = isAndroid ? `geo:0,0?q=${query}` : `comgooglemaps://?q=${query}`;
-        });
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('.maps-link').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        const ua = navigator.userAgent;
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const isAndroid = /Android/i.test(ua);
+        if (!isIOS && !isAndroid) return; // desktop: obre href en nova pestanya
+        e.preventDefault();
+        const query = encodeURIComponent((el as HTMLAnchorElement).dataset.mapsQuery ?? '');
+        window.location.href = isAndroid ? `geo:0,0?q=${query}` : `comgooglemaps://?q=${query}`;
       });
     });
-  </script>
+  });
+</script>
 
-  <!-- Cinema-priority session ordering: moves the source cinema to the top -->
-  <script>
-    document.addEventListener('astro:page-load', () => {
-      const params = new URLSearchParams(location.search);
-      const targetCinema = params.get('cinema');
-      if (!targetCinema) return;
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const params = new URLSearchParams(location.search);
+    const targetCinema = params.get('cinema');
+    if (!targetCinema) return;
 
-      const grid = document.querySelector('.sessions-grid');
-      if (!grid) return;
+    const grid = document.querySelector('.sessions-grid');
+    if (!grid) return;
 
-      const items = [...grid.querySelectorAll(':scope > .session-cinema')];
-      const match = items.filter((el) => (el as HTMLElement).dataset.cinema === targetCinema);
-      const others = items.filter((el) => (el as HTMLElement).dataset.cinema !== targetCinema);
+    const items = [...grid.querySelectorAll(':scope > .session-cinema')];
+    const match = items.filter((el) => (el as HTMLElement).dataset.cinema === targetCinema);
+    const others = items.filter((el) => (el as HTMLElement).dataset.cinema !== targetCinema);
 
-      if (match.length === 0) return;
+    if (match.length === 0) return;
 
-      grid.innerHTML = '';
-      match.forEach((el) => grid.appendChild(el));
-      others.forEach((el) => grid.appendChild(el));
-    });
-  </script>
-</Base>
+    grid.innerHTML = '';
+    match.forEach((el) => grid.appendChild(el));
+    others.forEach((el) => grid.appendChild(el));
+  });
+</script>
+
+<style>
+  /* ── 404 NOT FOUND ── */
+  .film-not-found {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 24px;
+  }
+  .film-not-found-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 12px;
+    padding-bottom: 60px;
+  }
+  .film-not-found-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 7rem;
+    line-height: 1;
+    color: var(--muted);
+    opacity: 0.35;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .film-not-found-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .film-not-found-desc {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    max-width: 320px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+</style>
