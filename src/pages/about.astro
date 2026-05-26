@@ -2,11 +2,28 @@
 import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { fetchFilms, fetchCinemas } from '../lib/filmcat';
 
 const title = 'Sobre FILMCAT — Cartellera de Cinema en Català';
 const description =
   "FILMCAT és l'única cartellera digital que agrega en temps real totes les projeccions de cinema en català (VOSC i VDC) a tots els cinemes de Catalunya.";
 const canonical = 'https://filmcat.app/about';
+
+// ── Live stats from the API ──
+const [{ films: rawFilms }, cinemasFromApi] = await Promise.all([fetchFilms(), fetchCinemas()]);
+const films = rawFilms.filter((f) => f.sessions.length > 0);
+const filmCount = films.length;
+const cinemaCount =
+  cinemasFromApi.length > 0
+    ? cinemasFromApi.length
+    : new Set(films.flatMap((f) => f.sessions.map((s) => s.cinema))).size;
+const sessionCount = films.reduce(
+  (a, f) => a + f.sessions.reduce((b, s) => b + s.times.length, 0),
+  0
+);
+
+// Cache 7 dies igual que la homepage (dades setmanals)
+Astro.response.headers.set('Cache-Control', 's-maxage=604800, stale-while-revalidate=86400');
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -66,15 +83,15 @@ const jsonLd = {
     <!-- ── STATS ── -->
     <div class="about-stats" aria-label="Estadístiques del projecte">
       <div class="about-stat reveal-stat">
-        <div class="about-stat-num" data-count="195">0</div>
+        <div class="about-stat-num" data-count={cinemaCount}>0</div>
         <div class="about-stat-label">Cinemes</div>
       </div>
       <div class="about-stat reveal-stat" style="--delay:80ms">
-        <div class="about-stat-num" data-count="52">0</div>
+        <div class="about-stat-num" data-count={filmCount}>0</div>
         <div class="about-stat-label">Pel·lícules</div>
       </div>
       <div class="about-stat reveal-stat" style="--delay:160ms">
-        <div class="about-stat-num" data-count="400">0</div>
+        <div class="about-stat-num" data-count={sessionCount}>0</div>
         <div class="about-stat-label">Sessions setmanals</div>
       </div>
     </div>
@@ -190,7 +207,8 @@ const jsonLd = {
               <div class="data-key">Codi obert</div>
               <div class="data-val">
                 <a href="https://github.com/adriamontiel/filmcat-astro" rel="noopener noreferrer"
-                  >GitHub</a>
+                  >GitHub</a
+                >
               </div>
             </div>
             <div class="data-card reveal-card" style="--delay:120ms">
